@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Eventos - {{ page.title }}{% endblock %}
+
+{% block content %}
+<h2>{{ page.title }}</h2>
+
+<ul>
+    {% for evento in page.get_children.live %}
+    <li>
+        <a href="{{ evento.url }}">{{ evento.title }}</a> - {{ evento.specific.fecha|date:"d M Y H:i" }} en {{
+        evento.specific.ubicacion }}
+    </li>
+    {% empty %}
+    <li>No hay eventos programados.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

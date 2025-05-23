@@ -1,0 +1,38 @@
+{% load wagtailimages_tags %}
+
+<div id="carouselImages" class="carousel slide position-relative" data-bs-ride="carousel">
+    <!-- Indicadores -->
+    <div class="carousel-indicators">
+        {% for image_block in value.images %}
+        <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="{{ forloop.counter0 }}"
+            class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% endif %}"
+            aria-label="Slide {{ forloop.counter }}"></button>
+        {% endfor %}
+    </div>
+
+    <!-- Carrusel -->
+    <div class="carousel-inner h-100">
+        {% for image_block in value.images %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %} h-100">
+            {% image image_block.image original as img %}
+            <img src="{{ img.url }}" class="d-block w-100 h-100 carousel-image"
+                alt="{{ image_block.caption|default:'Imagen del carrusel' }}">
+            {% if image_block.caption %}
+            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-2 rounded">
+                <p>{{ image_block.caption }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Controles -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Siguiente</span>
+    </button>
+</div>

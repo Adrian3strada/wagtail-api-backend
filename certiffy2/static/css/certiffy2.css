@@ -1,0 +1,62 @@
+#bannerCarousel {
+    max-height: 500px;
+    overflow: hidden;
+    position: relative;
+}
+
+#bannerCarousel .carousel-item img {
+    height: 500px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.banner-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+    color: green;
+    text-align: center;
+    padding: 10px;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+@media (max-width: 768px) {
+    #bannerCarousel .carousel-item img {
+        height: 300px;
+    }
+
+    .banner-title {
+        font-size: 1.8rem;
+    }
+}
+
+.nav-link:hover {
+    background-color: green;
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+
+.social-contact a {
+    color: #333;
+    transition: color 0.3s;
+}
+
+.social-contact a:hover {
+    color: #007bff;
+}

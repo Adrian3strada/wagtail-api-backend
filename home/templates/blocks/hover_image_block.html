@@ -1,0 +1,71 @@
+{% load wagtailimages_tags %}
+
+<div class="hover-image-block" style="position: relative;">
+    {% image self.image fill-800x600 %}
+    <div class="overlay overlay-{{ self.color_overlay }}">
+        {% if self.texto_overlay %}
+        <p>{{ self.texto_overlay }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .hover-image-block {
+        position: relative;
+        display: inline-block;
+    }
+
+    .hover-image-block .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .hover-image-block:hover .overlay {
+        opacity: 0.5;
+    }
+
+  
+    .overlay-primary {
+        background-color: #027be3;
+    }
+
+    .overlay-secondary {
+        background-color: #26a69a;
+    }
+
+    .overlay-accent {
+        background-color: #9c27b0;
+    }
+
+    .overlay-dark {
+        background-color: #1d1d1d;
+    }
+
+    .overlay-positive {
+        background-color: #21ba45;
+    }
+
+    .overlay-negative {
+        background-color: #c10015;
+    }
+
+    .overlay-info {
+        background-color: #31ccec;
+    }
+
+    .overlay-warning {
+        background-color: #f2c037;
+    }
+
+    .overlay p {
+        color: white;
+        text-align: center;
+        margin: 0;
+        padding: 10px;
+    }
+</style>

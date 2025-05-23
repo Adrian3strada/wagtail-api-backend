@@ -1,0 +1,11 @@
+<div class="testimonios">
+    {% for testimonio in self.testimonios %}
+    <div class="testimonio">
+        {% if testimonio.imagen %}
+        <img src="{{ testimonio.imagen.url }}" alt="Imagen de {{ testimonio.nombre }}">
+        {% endif %}
+        <h3>{{ testimonio.nombre }}</h3>
+        <p>{{ testimonio.comentario }}</p>
+    </div>
+    {% endfor %}
+</div>
