@@ -39,7 +39,6 @@
 <body class="{% block body_class %}{% endblock %}">
     {% wagtailuserbar %}
 
-    <!-- Navbar Bootstrap + Wagtail -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Mi Sitio</a>
@@ -51,13 +50,30 @@
                 <ul class="navbar-nav ms-auto">
                     {% wagtail_site as current_site %}
                     {% if current_site %}
-                    {% with site_root=page.get_site.root_page %}
-                    {% for nav_page in site_root.get_descendants.live.in_menu %}
+                    {% with site_root=current_site.root_page %}
+                    {% for parent_page in site_root.get_children.live.in_menu %}
+                    {% with child_pages=parent_page.get_children.live.in_menu %}
+                    {% if child_pages %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ parent_page.url }}"
+                            id="navbarDropdown{{ forloop.counter }}" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            {{ parent_page.title }}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ forloop.counter }}">
+                            {% for child in child_pages %}
+                            <li><a class="dropdown-item" href="{{ child.url }}">{{ child.title }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% else %}
                     <li class="nav-item">
-                        <a class="nav-link {% if nav_page == page %}active{% endif %}" href="{{ nav_page.url }}">
-                            {{ nav_page.title }}
+                        <a class="nav-link {% if parent_page == page %}active{% endif %}" href="{{ parent_page.url }}">
+                            {{ parent_page.title }}
                         </a>
                     </li>
+                    {% endif %}
+                    {% endwith %}
                     {% endfor %}
                     {% endwith %}
                     {% endif %}
