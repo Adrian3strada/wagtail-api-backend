@@ -1,13 +1,25 @@
 from django.db import models
 from wagtail.models import Page
 from wagtail.fields import StreamField
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.admin.panels import FieldPanel
 from wagtail.api import APIField
-from wagtail.images.blocks import ImageChooserBlock
 from wagtail import blocks
-from wagtail.fields import RichTextField
+from wagtail.images.blocks import ImageChooserBlock
 
+# ---------- BLOQUE PERSONALIZADO PARA IMÁGENES ----------
 
+class CustomImageBlock(ImageChooserBlock):
+    def get_api_representation(self, value, context=None):
+        if not value:
+            return None
+        return {
+            "id": value.id,
+            "title": value.title,
+            "url": value.file.url,
+
+        }
+
+# ---------- OPCIONES DE COLORES ----------
 
 QUASAR_COLOR_CHOICES = [
     ('primary', 'Primary'),
@@ -20,15 +32,58 @@ QUASAR_COLOR_CHOICES = [
     ('warning', 'Warning'),
 ]
 
+# ---------- BLOQUES PERSONALIZADOS CON IMAGEN ----------
+
+class CardBlock(blocks.StructBlock):
+    imagen = CustomImageBlock(required=False, label="Imagen")
+    titulo = blocks.CharBlock(required=True, label="Título")
+    descripcion = blocks.TextBlock(required=False, label="Descripción")
+    enlace = blocks.URLBlock(required=False, label="Enlace")
+
+    class Meta:
+        icon = "placeholder"
+        label = "Tarjeta"
+        template = "blocks/card_block.html"
+
+    def get_api_representation(self, value, context=None):
+        imagen = value.get("imagen")
+        return {
+            "titulo": value["titulo"],
+            "descripcion": value["descripcion"],
+            "enlace": value.get("enlace"),
+            "imagen": {
+                "url": imagen.get_rendition("original").url if imagen else None,
+                "title": imagen.title if imagen else None
+            } if imagen else None
+        }
+
+class CardsBlock(blocks.StructBlock):
+    tarjetas = blocks.ListBlock(CardBlock(), label="tarjeta de noticias")
+
+    class Meta:
+        icon = "placeholder"
+        label = "Grupo de tarjetas"
+        template = "blocks/cards_block.html"
+
 class TestimonioBlock(blocks.StructBlock):
     nombre = blocks.CharBlock(label="Nombre")
     comentario = blocks.TextBlock(label="Comentario")
-    imagen = ImageChooserBlock(required=False, label="Imagen (opcional)")
+    imagen = CustomImageBlock(required=False, label="Imagen (opcional)")
 
     class Meta:
         icon = "user"
         label = "Testimonio"
 
+    def get_api_representation(self, value, context=None):
+        imagen = value.get("imagen")
+        return {
+            "nombre": value["nombre"],
+            "comentario": value["comentario"],
+            "imagen": {
+                "url": imagen.get_rendition("original").url if imagen else None,
+                "title": imagen.title if imagen else None
+            }
+        }
 
 class TestimoniosBlock(blocks.StructBlock):
     testimonios = blocks.ListBlock(TestimonioBlock(), label="Lista de testimonios")
@@ -39,15 +94,32 @@ class TestimoniosBlock(blocks.StructBlock):
         label = "Testimonios"
 
 class CarouselImageBlock(blocks.StructBlock):
-    image = ImageChooserBlock(required=True, label="Imagen")
+    image = CustomImageBlock(required=True, label="Imagen")
     caption = blocks.CharBlock(required=False, label="Texto opcional", max_length=250)
 
     class Meta:
         icon = "image"
         label = "Imagen del Carrusel"
 
+    def get_api_representation(self, value, context=None):
+        return {
+            "caption": value.get("caption"),
+            "image": {
+                "url": value["image"].get_rendition("original").url,
+                "title": value["image"].title
+            }
+        }
+
+class CarouselBlock(blocks.StructBlock):
+    images = blocks.ListBlock(CarouselImageBlock(), label="Imágenes")
+
+    class Meta:
+        icon = "image"
+        label = "Carrusel de imágenes"
+        template = "blocks/carrusel_block.html"
+
 class HoverImageBlock(blocks.StructBlock):
-    image = ImageChooserBlock(required=True, label="Imagen")
+    image = CustomImageBlock(required=True, label="Imagen")
     texto_overlay = blocks.CharBlock(required=False, label="Texto sobre la imagen")
     color_overlay = blocks.ChoiceBlock(
         choices=QUASAR_COLOR_CHOICES,
@@ -61,13 +133,42 @@ class HoverImageBlock(blocks.StructBlock):
         icon = "image"
         label = "Imagen con Hover"
 
-class CarouselBlock(blocks.StructBlock):
-    images = blocks.ListBlock(CarouselImageBlock(), label="Imágenes")
+    def get_api_representation(self, value, context=None):
+        return {
+            "texto_overlay": value["texto_overlay"],
+            "color_overlay": value["color_overlay"],
+            "image": {
+                "url": value["image"].get_rendition("original").url,
+                "title": value["image"].title
+            }
+        }
+
+class GalleryImageBlock(blocks.StructBlock):
+    image = CustomImageBlock(required=True, label="Imagen")
+    caption = blocks.CharBlock(required=False, label="Texto opcional", max_length=250)
 
     class Meta:
         icon = "image"
-        label = "Carrusel de imágenes"
-        template = "blocks/carrusel_block.html"
+        label = "Imagen de galería"
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "caption": value.get("caption"),
+            "image": {
+                "url": value["image"].get_rendition("original").url,
+                "title": value["image"].title
+            }
+        }
+
+class GalleryBlock(blocks.StructBlock):
+    images = blocks.ListBlock(GalleryImageBlock(), label="Imágenes")
+
+    class Meta:
+        icon = "image"
+        label = "Galería de imágenes"
+        template = "blocks/gallery_block.html"
+
+# ---------- BLOQUES DE TEXTO, VIDEO, BOTÓN, IFRAME ----------
 
 class ButtonBlock(blocks.StructBlock):
     text = blocks.CharBlock(required=True, help_text="Texto del botón")
@@ -82,7 +183,7 @@ class ButtonBlock(blocks.StructBlock):
         ],
         default='primary',
         required=False,
-        help_text="Estilo del bot"
+        help_text="Estilo del botón"
     )
 
     class Meta:
@@ -98,24 +199,6 @@ class VideoBlock(blocks.StructBlock):
         label = "Video embebido"
         template = "blocks/video_block.html"
 
-
-class GalleryImageBlock(blocks.StructBlock):
-    image = ImageChooserBlock(required=True, label="Imagen")
-    caption = blocks.CharBlock(required=False, label="Texto opcional", max_length=250)
-
-    class Meta:
-        icon = "image"
-        label = "Imagen de galería"
-
-
-class GalleryBlock(blocks.StructBlock):
-    images = blocks.ListBlock(GalleryImageBlock(), label="Imágenes")
-
-    class Meta:
-        icon = "image"
-        label = "Galería de imágenes"
-        template = "blocks/gallery_block.html"
-
 class IframeBlock(blocks.StructBlock):
     iframe_url = blocks.URLBlock(label="URL del contenido embebido")
     height = blocks.IntegerBlock(default=400, label="Altura (px)")
@@ -125,12 +208,13 @@ class IframeBlock(blocks.StructBlock):
         label = "Contenido embebido (iframe)"
         template = "blocks/iframe_block.html"
 
+# ---------- STREAMFIELD GLOBAL ----------
 
 common_streamfield = [
     ('heading', blocks.CharBlock(classname="full title", label="Encabezado")),
     ('paragraph', blocks.RichTextBlock(label="Párrafo enriquecido")),
     ('plain_text', blocks.TextBlock(label="Texto simple")),
-    ('image', ImageChooserBlock(label="Imagen")),
+    ('image', CustomImageBlock(label="Imagen")),
     ('gallery', GalleryBlock()),
     ('carousel', CarouselBlock()),
     ('button', ButtonBlock()),
@@ -138,7 +222,11 @@ common_streamfield = [
     ('iframe', IframeBlock()),
     ('hover_image', HoverImageBlock()),
     ('testimonios', TestimoniosBlock()),
+    ('cards', CardsBlock()),
+
 ]
+
+# ---------- PÁGINAS WAGTAIL ----------
 
 class BaseContentPage(Page):
     body = StreamField(common_streamfield, use_json_field=True, blank=True)
@@ -164,7 +252,6 @@ class HomePage(BaseContentPage):
     class Meta:
         verbose_name = "Inicio"
 
-
 class NoticiasIndexPage(BaseContentPage):
     subpage_types = ['home.NoticiaPage']
     parent_page_types = ['home.HomePage']
@@ -172,9 +259,7 @@ class NoticiasIndexPage(BaseContentPage):
 class NoticiaPage(BaseContentPage):
     fecha = models.DateField("Fecha de Publicación", auto_now_add=True, editable=False)
 
-    content_panels = BaseContentPage.content_panels + [
-        
-    ]
+    content_panels = BaseContentPage.content_panels
 
     api_fields = BaseContentPage.api_fields + [
         APIField("fecha"),
@@ -204,20 +289,15 @@ class EventoPage(BaseContentPage):
     subpage_types = []
     parent_page_types = ['home.EventosIndexPage']
 
-
 class PaginaInformativaPage(BaseContentPage):  
     parent_page_types = ['home.HomePage']
     subpage_types = []
-
-
-
 
 class ContactoPage(BaseContentPage):
     telefono = models.CharField("Teléfono", max_length=20, blank=True)
     email = models.EmailField("Correo Electrónico", blank=True)
     direccion = models.TextField("Dirección", blank=True)
     horario = models.TextField("Horario", blank=True)
-
 
     content_panels = BaseContentPage.content_panels + [
         FieldPanel("telefono"),
