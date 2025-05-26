@@ -199,7 +199,7 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://6da8-177-240-133-120.ngrok-free.app',
+    'https://ccbf-177-240-133-120.ngrok-free.app',
     'https://proyectocms-iota.app',
 ]
 

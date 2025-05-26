@@ -8,12 +8,13 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 
-from wagtail.api.v2.views import PagesAPIViewSet
+from home.api import CustomPagesAPIViewSet
+
 from wagtail import hooks
 from wagtail.api.v2.router import WagtailAPIRouter
 
 api_router = WagtailAPIRouter('wagtailapi')
-api_router.register_endpoint('pages', PagesAPIViewSet)
+api_router.register_endpoint('pages', CustomPagesAPIViewSet)
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -22,6 +23,7 @@ urlpatterns = [
     path("search/", search_views.search, name="search"),
     path('api/v2/', api_router.urls),
     path('', include('home.urls')),
+    
 ]
 
 

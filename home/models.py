@@ -19,6 +19,22 @@ class CustomImageBlock(ImageChooserBlock):
 
         }
 
+class CustomPage(Page):
+    menu_children = APIField('menu_children')
+
+    def get_menu_children(self):
+        return [
+            {
+                'title': child.title,
+                'url': child.url,
+            }
+            for child in self.get_children().live().in_menu()
+        ]
+
+    @property
+    def menu_children(self):
+        return self.get_menu_children()
+
 # ---------- OPCIONES DE COLORES ----------
 
 QUASAR_COLOR_CHOICES = [
