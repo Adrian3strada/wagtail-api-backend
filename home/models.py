@@ -81,6 +81,8 @@ class CardsBlock(blocks.StructBlock):
         label = "Grupo de tarjetas"
         template = "blocks/cards_block.html"
 
+from wagtail import blocks
+
 class TestimonioBlock(blocks.StructBlock):
     nombre = blocks.CharBlock(label="Nombre")
     comentario = blocks.TextBlock(label="Comentario")
@@ -105,9 +107,62 @@ class TestimoniosBlock(blocks.StructBlock):
     testimonios = blocks.ListBlock(TestimonioBlock(), label="Lista de testimonios")
 
     class Meta:
-        template = "blocks/testimonios_block.html"
+        template = "blocks/testimonios_carrusel.html"  
         icon = "group"
-        label = "Testimonios"
+        label = "Testimonios Carrusel"
+
+class ButtonBlock(blocks.StructBlock):
+    text = blocks.CharBlock(required=True, help_text="Texto del botón")
+    url = blocks.URLBlock(required=True, help_text="Enlace del botón")
+    style = blocks.ChoiceBlock(
+        choices=[
+            ('primary', 'Primary'),
+            ('secondary', 'Secondary'),
+            ('success', 'Success'),
+            ('danger', 'Danger'),
+            ('warning', 'Warning'),
+        ],
+        default='primary',
+        required=False,
+        help_text="Estilo del botón"
+    )
+
+    class Meta:
+        template = 'blocks/button_block.html'
+        icon = 'placeholder'
+        label = 'Botón'
+
+
+class ModuloCertiffyBlock(blocks.StructBlock):
+    video_url = blocks.URLBlock(label="URL del video (YouTube, Vimeo, etc.)")
+    video_caption = blocks.CharBlock(
+        required=False, label="Descripción del video (abajo del reproductor)"
+    )
+    titulo = blocks.CharBlock(required=True, label="Título")
+    descripcion = blocks.TextBlock(required=True, label="Descripción")
+    botones = blocks.ListBlock(ButtonBlock(), label="Módulos disponibles")
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "caption": value.get("caption"),
+
+            "video_url": value.get("video_url"),
+            "video_caption": value.get("video_caption"),
+            "titulo": value.get("titulo"),
+            "descripcion": value.get("descripcion"),
+            "botones": [
+                {
+                    "text": b["text"],
+                    "url": b["url"],
+                    "style": b.get("style", "primary")
+                } for b in value["botones"]
+            ]
+        }
+
+    class Meta:
+        icon = "media"
+        label = "Bloque Módulo CERTIFFY"
+        template = "blocks/modulo_certiffy_block.html"
 
 class CarouselImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
@@ -186,26 +241,7 @@ class GalleryBlock(blocks.StructBlock):
 
 # ---------- BLOQUES DE TEXTO, VIDEO, BOTÓN, IFRAME ----------
 
-class ButtonBlock(blocks.StructBlock):
-    text = blocks.CharBlock(required=True, help_text="Texto del botón")
-    url = blocks.URLBlock(required=True, help_text="Enlace del botón")
-    style = blocks.ChoiceBlock(
-        choices=[
-            ('primary', 'Primary'),
-            ('secondary', 'Secondary'),
-            ('success', 'Success'),
-            ('danger', 'Danger'),
-            ('warning', 'Warning'),
-        ],
-        default='primary',
-        required=False,
-        help_text="Estilo del botón"
-    )
 
-    class Meta:
-        template = 'blocks/button_block.html'
-        icon = 'placeholder'
-        label = 'Botón'
 
 class VideoBlock(blocks.StructBlock):
     video_url = blocks.URLBlock(label="URL del video (YouTube o Vimeo)")
@@ -239,6 +275,7 @@ common_streamfield = [
     ('hover_image', HoverImageBlock()),
     ('testimonios', TestimoniosBlock()),
     ('cards', CardsBlock()),
+    ('modulo_certiffy', ModuloCertiffyBlock()),
 
 ]
 

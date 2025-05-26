@@ -199,8 +199,9 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://ccbf-177-240-133-120.ngrok-free.app',
+    'https://e2dd-2806-103e-1d-30e0-e195-e285-27cd-a015.ngrok-free.app',
     'https://proyectocms-iota.app',
+     'https://proyectocms-iota.vercel.app', 
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [

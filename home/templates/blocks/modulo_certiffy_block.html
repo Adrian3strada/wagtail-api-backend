@@ -1,0 +1,40 @@
+<div class="modulo-certiffy-block">
+
+    {% if self.video_url %}
+    <div class="video-container" style="margin-bottom: 1em;">
+        <iframe width="100%" height="400" src="{{ self.video_url | safe }}" frameborder="0" allowfullscreen></iframe>
+    </div>
+    {% endif %}
+
+    {% if self.video_caption %}
+    <p class="video-caption">{{ self.video_caption }}</p>
+    {% endif %}
+
+    {% if self.image %}
+    <div class="image-section" style="margin-bottom: 1em;">
+        <img src="{{ self.image.url }}" alt="{{ self.caption }}" style="max-width: 100%; height: auto;">
+        {% if self.caption %}
+        <p class="image-caption">{{ self.caption }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if self.titulo %}
+    <h2>{{ self.titulo }}</h2>
+    {% endif %}
+
+    {% if self.descripcion %}
+    <p>{{ self.descripcion }}</p>
+    {% endif %}
+
+    {% if self.botones %}
+    <div class="botones">
+        {% for boton in self.botones %}
+        <a href="{{ boton.url }}" class="btn btn-{{ boton.style|default:'primary' }}" style="margin: 0.25em;">
+            {{ boton.text }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
