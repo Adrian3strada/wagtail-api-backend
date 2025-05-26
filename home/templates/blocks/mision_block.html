@@ -1,0 +1,83 @@
+{% load wagtailimages_tags %}
+
+<div class="q-pa-md">
+    <div class="text-h5 q-mb-sm">{{ self.titulo }}</div>
+    <div class="text-body1 q-mb-md">{{ self.contenido }}</div>
+
+    <div class="hover-image-block">
+        {% if self.imagen_hover.image %}
+        {% image self.imagen_hover.image fill-800x600 class="full-width rounded-borders" %}
+        {% endif %}
+
+        {% if self.imagen_hover.texto_overlay %}
+        <div class="overlay overlay-{{ self.imagen_hover.color_overlay }}">
+            <div class="text-h6">{{ self.imagen_hover.texto_overlay }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .hover-image-block {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .hover-image-block img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .hover-image-block .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        opacity: 0.7;
+        /* Visibilidad del overlay */
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+    }
+
+    /* Colores del overlay (Quasar) */
+    .overlay-primary {
+        background-color: #027be3;
+    }
+
+    .overlay-secondary {
+        background-color: #26a69a;
+    }
+
+    .overlay-accent {
+        background-color: #9c27b0;
+    }
+
+    .overlay-dark {
+        background-color: #1d1d1d;
+    }
+
+    .overlay-positive {
+        background-color: #21ba45;
+    }
+
+    .overlay-negative {
+        background-color: #c10015;
+    }
+
+    .overlay-info {
+        background-color: #31ccec;
+    }
+
+    .overlay-warning {
+        background-color: #f2c037;
+    }
+</style>

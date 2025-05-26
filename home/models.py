@@ -6,7 +6,9 @@ from wagtail.api import APIField
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
 
-# ---------- BLOQUE PERSONALIZADO PARA IMÁGENES ----------
+from wagtail import blocks
+
+# apis para imagen
 
 class CustomImageBlock(ImageChooserBlock):
     def get_api_representation(self, value, context=None):
@@ -35,7 +37,7 @@ class CustomPage(Page):
     def menu_children(self):
         return self.get_menu_children()
 
-# ---------- OPCIONES DE COLORES ----------
+#quasar 
 
 QUASAR_COLOR_CHOICES = [
     ('primary', 'Primary'),
@@ -48,7 +50,28 @@ QUASAR_COLOR_CHOICES = [
     ('warning', 'Warning'),
 ]
 
-# ---------- BLOQUES PERSONALIZADOS CON IMAGEN ----------
+#bloques
+
+class ButtonBlock(blocks.StructBlock):
+    text = blocks.CharBlock(required=True, help_text="Texto del botón")
+    url = blocks.URLBlock(required=True, help_text="Enlace del botón")
+    style = blocks.ChoiceBlock(
+        choices=[
+            ('primary', 'Primary'),
+            ('secondary', 'Secondary'),
+            ('success', 'Success'),
+            ('danger', 'Danger'),
+            ('warning', 'Warning'),
+        ],
+        default='primary',
+        required=False,
+        help_text="Estilo del botón"
+    )
+
+    class Meta:
+        template = 'blocks/button_block.html'
+        icon = 'placeholder'
+        label = 'Botón'
 
 class CardBlock(blocks.StructBlock):
     imagen = CustomImageBlock(required=False, label="Imagen")
@@ -73,6 +96,9 @@ class CardBlock(blocks.StructBlock):
             } if imagen else None
         }
 
+
+
+
 class CardsBlock(blocks.StructBlock):
     tarjetas = blocks.ListBlock(CardBlock(), label="tarjeta de noticias")
 
@@ -81,7 +107,37 @@ class CardsBlock(blocks.StructBlock):
         label = "Grupo de tarjetas"
         template = "blocks/cards_block.html"
 
-from wagtail import blocks
+
+class CardEDBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=True, label="Título")
+    descripcion = blocks.TextBlock(required=False, label="Descripción")
+    textos_adicionales = blocks.ListBlock(
+        blocks.RichTextBlock(), 
+        required=False, 
+        label="Textos adicionales"
+    )
+    enlace = ButtonBlock(required=False, label="Botón de enlace")
+
+    class Meta:
+        icon = "placeholder"
+        label = "Tarjeta ED"
+        template = "blocks/cardED_block.html"
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "titulo": value["titulo"],
+            "descripcion": value["descripcion"],
+            "textos_adicionales": value.get("textos_adicionales"),
+            "enlace": value.get("enlace"),
+        }
+        
+class CardsEDBlock(blocks.StructBlock):
+    tarjetas = blocks.ListBlock(CardEDBlock(), label="tarjetas ED")
+
+    class Meta:
+        icon = "placeholder"
+        label = "Grupo de tarjetas ED"
+        template = "blocks/cardsED_block.html"
 
 class TestimonioBlock(blocks.StructBlock):
     nombre = blocks.CharBlock(label="Nombre")
@@ -103,6 +159,31 @@ class TestimonioBlock(blocks.StructBlock):
             }
         }
 
+
+
+class PactoVerdeBlock(blocks.StructBlock):
+    imagen = CustomImageBlock(required=False, label="Imagen")
+    titulo = blocks.CharBlock(required=True, label="Título")
+    descripcion = blocks.TextBlock(required=False, label="Descripción")
+
+    class Meta:
+        icon = "placeholder"
+        label = "Pacto-verde"
+        template = "blocks/pactoverde_block.html"
+
+    def get_api_representation(self, value, context=None):
+        imagen = value.get("imagen")
+        return {
+            "titulo": value["titulo"],
+            "descripcion": value["descripcion"],
+            "imagen": {
+                "url": imagen.get_rendition("original").url if imagen else None,
+                "title": imagen.title if imagen else None
+            } if imagen else None
+        }
+
+
+
 class TestimoniosBlock(blocks.StructBlock):
     testimonios = blocks.ListBlock(TestimonioBlock(), label="Lista de testimonios")
 
@@ -111,26 +192,8 @@ class TestimoniosBlock(blocks.StructBlock):
         icon = "group"
         label = "Testimonios Carrusel"
 
-class ButtonBlock(blocks.StructBlock):
-    text = blocks.CharBlock(required=True, help_text="Texto del botón")
-    url = blocks.URLBlock(required=True, help_text="Enlace del botón")
-    style = blocks.ChoiceBlock(
-        choices=[
-            ('primary', 'Primary'),
-            ('secondary', 'Secondary'),
-            ('success', 'Success'),
-            ('danger', 'Danger'),
-            ('warning', 'Warning'),
-        ],
-        default='primary',
-        required=False,
-        help_text="Estilo del botón"
-    )
 
-    class Meta:
-        template = 'blocks/button_block.html'
-        icon = 'placeholder'
-        label = 'Botón'
+
 
 
 class ModuloCertiffyBlock(blocks.StructBlock):
@@ -189,6 +252,8 @@ class CarouselBlock(blocks.StructBlock):
         label = "Carrusel de imágenes"
         template = "blocks/carrusel_block.html"
 
+
+
 class HoverImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
     texto_overlay = blocks.CharBlock(required=False, label="Texto sobre la imagen")
@@ -213,6 +278,26 @@ class HoverImageBlock(blocks.StructBlock):
                 "title": value["image"].title
             }
         }
+
+
+class MisionBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=True, label="Título")
+    contenido = blocks.TextBlock(required=True, label="Contenido")
+    imagen_hover = HoverImageBlock(required=True, label="Imagen con overlay")
+
+    class Meta:
+        template = "blocks/mision_block.html"
+        icon = "doc-full"
+        label = "Bloque Misión"
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "titulo": value["titulo"],
+            "contenido": value["contenido"],
+            "imagen_hover": self.child_blocks["imagen_hover"].get_api_representation(value["imagen_hover"])
+        }
+
+
 
 class GalleryImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
@@ -239,8 +324,6 @@ class GalleryBlock(blocks.StructBlock):
         label = "Galería de imágenes"
         template = "blocks/gallery_block.html"
 
-# ---------- BLOQUES DE TEXTO, VIDEO, BOTÓN, IFRAME ----------
-
 
 
 class VideoBlock(blocks.StructBlock):
@@ -260,7 +343,7 @@ class IframeBlock(blocks.StructBlock):
         label = "Contenido embebido (iframe)"
         template = "blocks/iframe_block.html"
 
-# ---------- STREAMFIELD GLOBAL ----------
+# bloques reutilizables
 
 common_streamfield = [
     ('heading', blocks.CharBlock(classname="full title", label="Encabezado")),
@@ -276,10 +359,14 @@ common_streamfield = [
     ('testimonios', TestimoniosBlock()),
     ('cards', CardsBlock()),
     ('modulo_certiffy', ModuloCertiffyBlock()),
+    ('mision', MisionBlock()),
+    ('pacto_verde', PactoVerdeBlock()),
+    ('cardED', CardEDBlock()),
+    ('cardsED', CardsEDBlock()),
 
 ]
 
-# ---------- PÁGINAS WAGTAIL ----------
+
 
 class BaseContentPage(Page):
     body = StreamField(common_streamfield, use_json_field=True, blank=True)

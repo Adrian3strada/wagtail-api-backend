@@ -1,0 +1,11 @@
+{% load wagtailcore_tags %}
+
+<div class="cards-ed-group">
+    {% for tarjeta in self.tarjetas %}
+    <div class="card-ed-item">
+        {% include_block tarjeta %}
+    </div>
+    {% empty %}
+    <p>No hay tarjetas para mostrar.</p>
+    {% endfor %}
+</div>

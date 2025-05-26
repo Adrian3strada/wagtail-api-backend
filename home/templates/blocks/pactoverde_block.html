@@ -1,0 +1,40 @@
+{% load wagtailimages_tags %}
+
+<div class="q-pa-md pacto-verde-block">
+    {% if self.imagen %}
+    <div class="pacto-verde-imagen q-mb-md">
+        {% image self.imagen fill-800x600 class="full-width rounded-borders" %}
+    </div>
+    {% endif %}
+
+    <div class="pacto-verde-contenido">
+        <h2 class="text-h5 q-mb-sm">{{ self.titulo }}</h2>
+        {% if self.descripcion %}
+        <p class="text-body1">{{ self.descripcion }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .pacto-verde-block {
+        background-color: #f5f5f5;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .pacto-verde-imagen img {
+        border-radius: 12px;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .pacto-verde-contenido h2 {
+        color: #2e7d32;
+        font-weight: 600;
+    }
+
+    .pacto-verde-contenido p {
+        color: #424242;
+    }
+</style>

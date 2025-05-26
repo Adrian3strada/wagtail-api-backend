@@ -1,7 +1,7 @@
 {% load wagtailimages_tags %}
 
 <div id="carouselImages" class="carousel slide position-relative" data-bs-ride="carousel">
-    <!-- Indicadores -->
+
     <div class="carousel-indicators">
         {% for image_block in value.images %}
         <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="{{ forloop.counter0 }}"
@@ -10,7 +10,7 @@
         {% endfor %}
     </div>
 
-    <!-- Carrusel -->
+
     <div class="carousel-inner h-100">
         {% for image_block in value.images %}
         <div class="carousel-item {% if forloop.first %}active{% endif %} h-100">
@@ -26,7 +26,7 @@
         {% endfor %}
     </div>
 
-    <!-- Controles -->
+
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Anterior</span>
