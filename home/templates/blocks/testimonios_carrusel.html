@@ -1,5 +1,5 @@
 {% load wagtailimages_tags %}
-    
+
 <div id="testimoniosCarousel" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-inner">
         {% for testimonio in self.testimonios %}
@@ -12,6 +12,7 @@
                 {% endif %}
                 <h5>{{ testimonio.nombre }}</h5>
                 <p>{{ testimonio.comentario }}</p>
+                <p>{{ testimonio.organizacion }}</p>
             </div>
         </div>
         {% endfor %}

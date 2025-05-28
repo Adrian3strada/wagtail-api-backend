@@ -1,15 +1,14 @@
 {% extends "base.html" %}
-
+{% load wagtailcore_tags %}
 {% block title %}Noticias - {{ page.title }}{% endblock %}
 
 {% block content %}
 <h2>{{ page.title }}</h2>
 
-<ul>
-    {% for noticia in page.get_children.live %}
-    <li><a href="{{ noticia.url }}">{{ noticia.title }}</a> - {{ noticia.specific.fecha }}</li>
-    {% empty %}
-    <li>No hay noticias disponibles.</li>
-    {% endfor %}
-</ul>
+{% for bloque in page.body %}
+{% include_block bloque %}
+{% empty %}
+<p>No hay contenido disponible.</p>
+{% endfor %}
+
 {% endblock %}

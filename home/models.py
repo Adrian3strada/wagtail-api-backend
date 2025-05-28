@@ -5,8 +5,8 @@ from wagtail.admin.panels import FieldPanel
 from wagtail.api import APIField
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
+from wagtail.documents.blocks import DocumentChooserBlock
 
-from wagtail import blocks
 
 # apis para imagen
 
@@ -49,6 +49,9 @@ QUASAR_COLOR_CHOICES = [
     ('info', 'Info'),
     ('warning', 'Warning'),
 ]
+
+
+
 
 #bloques
 
@@ -141,6 +144,7 @@ class CardsEDBlock(blocks.StructBlock):
 class TestimonioBlock(blocks.StructBlock):
     nombre = blocks.CharBlock(label="Nombre")
     comentario = blocks.TextBlock(label="Comentario")
+    organizacion = blocks.TextBlock(label="organizacion")
     imagen = CustomImageBlock(required=False, label="Imagen (opcional)")
 
     class Meta:
@@ -152,6 +156,7 @@ class TestimonioBlock(blocks.StructBlock):
         return {
             "nombre": value["nombre"],
             "comentario": value["comentario"],
+            "organizacion": value["organizacion"],
             "imagen": {
                 "url": imagen.get_rendition("original").url if imagen else None,
                 "title": imagen.title if imagen else None
@@ -195,21 +200,26 @@ class TestimoniosBlock(blocks.StructBlock):
 
 
 
+from wagtail.images.blocks import ImageChooserBlock
+
 class ModuloCertiffyBlock(blocks.StructBlock):
     video_url = blocks.URLBlock(label="URL del video (YouTube, Vimeo, etc.)")
     video_caption = blocks.CharBlock(
         required=False, label="Descripción del video (abajo del reproductor)"
     )
+    imagen = ImageChooserBlock(required=False, label="Imagen adicional")  # ✅ NUEVO
     titulo = blocks.CharBlock(required=True, label="Título")
     descripcion = blocks.TextBlock(required=True, label="Descripción")
     botones = blocks.ListBlock(ButtonBlock(), label="Módulos disponibles")
 
     def get_api_representation(self, value, context=None):
         return {
-            "caption": value.get("caption"),
-
             "video_url": value.get("video_url"),
             "video_caption": value.get("video_caption"),
+            "imagen": {
+                "url": value["imagen"].get_rendition("original").url,
+                "title": value["imagen"].title,
+            } if value.get("imagen") else None,
             "titulo": value.get("titulo"),
             "descripcion": value.get("descripcion"),
             "botones": [
@@ -226,6 +236,7 @@ class ModuloCertiffyBlock(blocks.StructBlock):
         label = "Bloque Módulo CERTIFFY"
         template = "blocks/modulo_certiffy_block.html"
 
+
 class CarouselImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
     caption = blocks.CharBlock(required=False, label="Texto opcional", max_length=250)
@@ -240,17 +251,17 @@ class CarouselImageBlock(blocks.StructBlock):
             "image": {
                 "url": value["image"].get_rendition("original").url,
                 "title": value["image"].title
-            }
+            }   
         }
 
 class CarouselBlock(blocks.StructBlock):
     images = blocks.ListBlock(CarouselImageBlock(), label="Imágenes")
+    video_url = blocks.URLBlock(required=False, label="Video (URL de YouTube o Vimeo)")
 
     class Meta:
         icon = "image"
-        label = "Carrusel de imágenes"
+        label = "Carrusel con video"
         template = "blocks/carrusel_block.html"
-
 
 
 class HoverImageBlock(blocks.StructBlock):
@@ -281,7 +292,6 @@ class HoverImageBlock(blocks.StructBlock):
 
 class MisionBlock(blocks.StructBlock):
     titulo = blocks.CharBlock(required=True, label="Título")
-    contenido = blocks.TextBlock(required=True, label="Contenido")
     imagen_hover = HoverImageBlock(required=True, label="Imagen con overlay")
 
     class Meta:
@@ -291,12 +301,40 @@ class MisionBlock(blocks.StructBlock):
 
     def get_api_representation(self, value, context=None):
         return {
-            "titulo": value["titulo"],
-            "contenido": value["contenido"],
-            "imagen_hover": self.child_blocks["imagen_hover"].get_api_representation(value["imagen_hover"])
+            "titulo": value.get("titulo"),
+            "imagen_hover": self.child_blocks["imagen_hover"].get_api_representation(
+                value["imagen_hover"], context=context
+            )
         }
 
+class PlataformBlock(blocks.StructBlock):
+    imagen = ImageChooserBlock(required=True, label="Imagen")
+    titulo = blocks.CharBlock(required=True, label="Titular")
+    descripcion = blocks.TextBlock(required=True, label="Texto largo")
+    botones = blocks.ListBlock(ButtonBlock(), required=False, label="Botones")
 
+    class Meta:
+        template = "blocks/PlataformBlock.html"
+        icon = "image"
+        label = "Contenido con Imagen"
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "imagen": {
+                "id": value["imagen"].id,
+                "url": value["imagen"].get_rendition("original").url,
+                "title": value["imagen"].title,
+            },
+            "titulo": value["titulo"],
+            "descripcion": value["descripcion"],
+            "botones": [
+                {
+                    "texto": boton["texto"],
+                    "url": boton["url"],
+                }
+                for boton in value.get("botones", [])
+            ],
+        }
 
 class GalleryImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
@@ -333,6 +371,34 @@ class VideoBlock(blocks.StructBlock):
         label = "Video embebido"
         template = "blocks/video_block.html"
 
+
+
+
+class DocumentBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=True, label="Título del documento")
+    documento = DocumentChooserBlock(required=True, label="Documento")
+
+    class Meta:
+        template = "blocks/documento_block.html"
+        icon = "doc-full"
+        label = "Documento"
+
+    def get_api_representation(self, value, context=None):
+  
+        documento = value.get('documento')
+        return {
+            "titulo": value.get("titulo"),
+            "documento": {
+                "id": documento.id,
+                "title": documento.title,
+                "url": documento.url,
+                "filename": documento.filename,
+                "file_size": documento.file.size,
+                "file_extension": documento.file_extension,
+            } if documento else None,
+        }
+
+
 class IframeBlock(blocks.StructBlock):
     iframe_url = blocks.URLBlock(label="URL del contenido embebido")
     height = blocks.IntegerBlock(default=400, label="Altura (px)")
@@ -362,6 +428,8 @@ common_streamfield = [
     ('pacto_verde', PactoVerdeBlock()),
     ('cardED', CardEDBlock()),
     ('cardsED', CardsEDBlock()),
+    ('PlataForm', PlataformBlock()),
+    ('Document', DocumentBlock()),
 
 ]
 

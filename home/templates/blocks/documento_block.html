@@ -1,0 +1,12 @@
+<div class="bloque-documento" style="margin: 1rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 8px;">
+    <h3 style="margin-bottom: 0.5rem;">{{ self.titulo }}</h3>
+
+    {% if self.documento %}
+    <a href="{{ self.documento.url }}" target="_blank"
+        style="display: inline-block; padding: 0.5rem 1rem; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">
+        Descargar: {{ self.documento.title }}
+    </a>
+    {% else %}
+    <p>No hay documento disponible.</p>
+    {% endif %}
+</div>

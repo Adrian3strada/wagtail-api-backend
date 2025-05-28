@@ -1,8 +1,10 @@
 {% load wagtailimages_tags %}
 
 <div class="q-pa-md">
-    <div class="text-h5 q-mb-sm">{{ self.titulo }}</div>
-    <div class="text-body1 q-mb-md">{{ self.contenido }}</div>
+
+    {% if self.titulo %}
+    <h2 class="text-h5 q-mb-md">{{ self.titulo }}</h2>
+    {% endif %}
 
     <div class="hover-image-block">
         {% if self.imagen_hover.image %}
@@ -10,12 +12,13 @@
         {% endif %}
 
         {% if self.imagen_hover.texto_overlay %}
-        <div class="overlay overlay-{{ self.imagen_hover.color_overlay }}">
+        <div class="overlay overlay-{{ self.imagen_hover.color_overlay|default:" primary" }}">
             <div class="text-h6">{{ self.imagen_hover.texto_overlay }}</div>
         </div>
         {% endif %}
     </div>
 </div>
+
 
 <style>
     .hover-image-block {

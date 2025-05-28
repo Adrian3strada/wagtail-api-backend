@@ -10,7 +10,6 @@
         {% endfor %}
     </div>
 
-
     <div class="carousel-inner h-100">
         {% for image_block in value.images %}
         <div class="carousel-item {% if forloop.first %}active{% endif %} h-100">
@@ -26,7 +25,6 @@
         {% endfor %}
     </div>
 
-
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Anterior</span>
@@ -36,3 +34,9 @@
         <span class="visually-hidden">Siguiente</span>
     </button>
 </div>
+
+{% if value.video_url %}
+<div class="mt-4 ratio ratio-16x9">
+    <iframe src="{{ value.video_url | safe }}" frameborder="0" allowfullscreen></iframe>
+</div>
+{% endif %}

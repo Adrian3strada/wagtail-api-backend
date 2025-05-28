@@ -1,3 +1,4 @@
+{% load wagtailimages_tags %}
 <div class="modulo-certiffy-block">
 
     {% if self.video_url %}
@@ -10,12 +11,10 @@
     <p class="video-caption">{{ self.video_caption }}</p>
     {% endif %}
 
-    {% if self.image %}
+    {% if self.imagen %}
     <div class="image-section" style="margin-bottom: 1em;">
-        <img src="{{ self.image.url }}" alt="{{ self.caption }}" style="max-width: 100%; height: auto;">
-        {% if self.caption %}
-        <p class="image-caption">{{ self.caption }}</p>
-        {% endif %}
+        {% image self.imagen original as img %}
+        <img src="{{ img.url }}" alt="{{ img.alt }}" style="max-width: 100%; height: auto;">
     </div>
     {% endif %}
 

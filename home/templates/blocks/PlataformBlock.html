@@ -1,0 +1,24 @@
+{% load wagtailimages_tags %}
+
+<div class="contenido-con-imagen" style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem;">
+    <!-- Imagen -->
+    <div class="imagen">
+        {% image self.imagen fill-400x300 class="imagen-clase" %}
+    </div>
+
+    <!-- Texto -->
+    <div class="texto">
+        <h2 style="margin: 0; font-weight: bold; text-decoration: underline;">{{ self.titulo }}</h2>
+        <p style="white-space: pre-line; font-size: 1rem;">{{ self.descripcion }}</p>
+
+        {% if self.botones %}
+        <div class="botones" style="margin-top: 1rem;">
+            {% for boton in self.botones %}
+            <a href="{{ boton.url }}" class="btn btn-{{ boton.style|default:'primary' }}" style="margin-right: 0.5rem;">
+                {{ boton.text }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
