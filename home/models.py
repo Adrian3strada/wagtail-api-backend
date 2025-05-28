@@ -111,11 +111,7 @@ class CardsBlock(blocks.StructBlock):
 class CardEDBlock(blocks.StructBlock):
     titulo = blocks.CharBlock(required=True, label="Título")
     descripcion = blocks.TextBlock(required=False, label="Descripción")
-    textos_adicionales = blocks.ListBlock(
-        blocks.RichTextBlock(), 
-        required=False, 
-        label="Textos adicionales"
-    )
+    textos_adicionales = blocks.ListBlock(blocks.RichTextBlock(), required=False, label="Textos adicionales")
     enlace = ButtonBlock(required=False, label="Botón de enlace")
 
     class Meta:
@@ -127,9 +123,12 @@ class CardEDBlock(blocks.StructBlock):
         return {
             "titulo": value["titulo"],
             "descripcion": value["descripcion"],
-            "textos_adicionales": value.get("textos_adicionales"),
+            "textos_adicionales": [
+                str(texto) for texto in value.get("textos_adicionales", [])
+            ],
             "enlace": value.get("enlace"),
         }
+
         
 class CardsEDBlock(blocks.StructBlock):
     tarjetas = blocks.ListBlock(CardEDBlock(), label="tarjetas ED")
