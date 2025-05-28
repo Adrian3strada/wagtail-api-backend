@@ -408,6 +408,38 @@ class IframeBlock(blocks.StructBlock):
         label = "Contenido embebido (iframe)"
         template = "blocks/iframe_block.html"
 
+
+class LogoConURLBlock(blocks.StructBlock):
+    logo = ImageChooserBlock(required=True, label="Logo")
+    url = blocks.URLBlock(required=False, label="Enlace (opcional)")
+
+    def get_api_representation(self, value, context=None):
+        return {
+            'url': value.get('url', ''),
+            'logo_url': value['logo'].file.url if value.get('logo') else None,
+        }
+
+    class Meta:
+        icon = "image"
+        label = "Logo con URL"
+        template = "blocks/logo_con_url.html"
+
+
+class ListaDeLogosBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=True, label="Título general")
+    logos = blocks.ListBlock(LogoConURLBlock(), label="Logos")
+
+    def get_api_representation(self, value, context=None):
+        return {
+            'titulo': value['titulo'],
+            'logos': [logo for logo in value['logos']],
+        }
+
+    class Meta:
+        icon = "list-ul"
+        label = "Lista de Logos"
+        template = "blocks/ListaDeLogosBlock.html"
+
 # bloques reutilizables
 
 common_streamfield = [
@@ -430,6 +462,7 @@ common_streamfield = [
     ('cardsED', CardsEDBlock()),
     ('PlataForm', PlataformBlock()),
     ('Document', DocumentBlock()),
+    ('Socios', ListaDeLogosBlock()),
 
 ]
 

@@ -1,0 +1,14 @@
+{% load wagtailimages_tags %}
+
+<div class="logo-item" style="text-align: center; margin: 1rem;">
+    {% if self.url %}
+    <a href="{{ self.url }}" target="_blank" rel="noopener">
+        <img src="{{ self.logo.file.url }}" alt="{{ self.titulo }}" style="max-width: 150px;">
+    </a>
+    {% else %}
+    <img src="{{ self.logo.file.url }}" alt="{{ self.titulo }}" style="max-width: 150px;">
+    {% endif %}
+    {% if self.titulo %}
+    <p>{{ self.titulo }}</p>
+    {% endif %}
+</div>
