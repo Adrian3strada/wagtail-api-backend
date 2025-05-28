@@ -19,6 +19,7 @@ api_router.register_endpoint('pages', CustomPagesAPIViewSet)
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
+    path('', include('home.urls')), 
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path('api/v2/', api_router.urls),

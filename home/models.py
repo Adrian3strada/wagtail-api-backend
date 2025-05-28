@@ -6,7 +6,17 @@ from wagtail.api import APIField
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.documents.blocks import DocumentChooserBlock
+from wagtail.snippets.models import register_snippet
 
+
+@register_snippet
+class NavItem(models.Model):
+    title = models.CharField(max_length=100)
+    page = models.ForeignKey(Page, on_delete=models.CASCADE, related_name='+')
+    order = models.PositiveIntegerField(default=0)
+
+    def __str__(self):  
+        return self.title
 
 # apis para imagen
 
