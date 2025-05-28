@@ -35,7 +35,7 @@
     </button>
 </div>
 
-{% if value.video_url %}
+{% if value.video_url and value.mostrar_video %}
 <div class="mt-4 ratio ratio-16x9">
     <iframe src="{{ value.video_url | safe }}" frameborder="0" allowfullscreen></iframe>
 </div>

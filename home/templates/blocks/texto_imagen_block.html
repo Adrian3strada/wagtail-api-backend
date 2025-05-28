@@ -1,0 +1,11 @@
+{% load wagtailimages_tags %}
+
+<div class="plataform-block">
+    <div class="image-section">
+        {% image value.imagen original as img %}
+        <img src="{{ img.url }}" alt="{{ img.alt }}" class="img-fluid">
+    </div>
+    <div class="text-section">
+        <p>{{ value.texto }}</p>
+    </div>
+</div>

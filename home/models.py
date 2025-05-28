@@ -11,13 +11,14 @@ from wagtail.snippets.models import register_snippet
 
 @register_snippet
 class NavItem(models.Model):
-    title = models.CharField(max_length=100)
-    page = models.ForeignKey(Page, on_delete=models.CASCADE, related_name='+')
-    order = models.PositiveIntegerField(default=0)
+    title = models.CharField(max_length=255)
+    page = models.ForeignKey(Page, null=True, blank=True, on_delete=models.SET_NULL)
+    order = models.IntegerField(default=0)
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
 
-    def __str__(self):  
+    def __str__(self):
         return self.title
-
+        
 # apis para imagen
 
 class CustomImageBlock(ImageChooserBlock):
@@ -152,10 +153,10 @@ class CardsEDBlock(blocks.StructBlock):
         template = "blocks/cardsED_block.html"
 
 class TestimonioBlock(blocks.StructBlock):
-    nombre = blocks.CharBlock(label="Nombre")
-    comentario = blocks.TextBlock(label="Comentario")
-    organizacion = blocks.TextBlock(label="organizacion")
-    imagen = CustomImageBlock(required=False, label="Imagen (opcional)")
+    nombre = blocks.CharBlock(required=True, label="Nombre")
+    organizacion = blocks.CharBlock(required=False, label="Organización")
+    comentario = blocks.TextBlock(required=True, label="Comentario")
+    imagen = CustomImageBlock(required=False, label="Foto del Testimonio")
 
     class Meta:
         icon = "user"
@@ -210,14 +211,12 @@ class TestimoniosBlock(blocks.StructBlock):
 
 
 
-from wagtail.images.blocks import ImageChooserBlock
-
 class ModuloCertiffyBlock(blocks.StructBlock):
     video_url = blocks.URLBlock(label="URL del video (YouTube, Vimeo, etc.)")
     video_caption = blocks.CharBlock(
         required=False, label="Descripción del video (abajo del reproductor)"
     )
-    imagen = ImageChooserBlock(required=False, label="Imagen adicional")  # ✅ NUEVO
+    imagen = ImageChooserBlock(required=False, label="Imagen adicional")  
     titulo = blocks.CharBlock(required=True, label="Título")
     descripcion = blocks.TextBlock(required=True, label="Descripción")
     botones = blocks.ListBlock(ButtonBlock(), label="Módulos disponibles")
@@ -254,7 +253,7 @@ class CarouselImageBlock(blocks.StructBlock):
     class Meta:
         icon = "image"
         label = "Imagen del Carrusel"
-
+    
     def get_api_representation(self, value, context=None):
         return {
             "caption": value.get("caption"),
@@ -267,6 +266,7 @@ class CarouselImageBlock(blocks.StructBlock):
 class CarouselBlock(blocks.StructBlock):
     images = blocks.ListBlock(CarouselImageBlock(), label="Imágenes")
     video_url = blocks.URLBlock(required=False, label="Video (URL de YouTube o Vimeo)")
+    mostrar_video = blocks.BooleanBlock(required=False, default=True, label="Mostrar video")
 
     class Meta:
         icon = "image"
@@ -346,6 +346,26 @@ class PlataformBlock(blocks.StructBlock):
             ],
         }
 
+class ImagenConTextoBlock(blocks.StructBlock):
+    imagen = ImageChooserBlock(required=True, label="Imagen")
+    texto = blocks.CharBlock(required=True, label="Texto largo")
+
+    class Meta:
+        template = "blocks/texto_imagen_block.html"
+        icon = "image"
+        label = "Imagen y texto"
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "imagen": {
+                "id": value["imagen"].id,
+                "url": value["imagen"].get_rendition("original").url,
+                "title": value["imagen"].title,
+            },
+            "texto": value["texto"],
+          
+        }
+
 class GalleryImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
     caption = blocks.CharBlock(required=False, label="Texto opcional", max_length=250)
@@ -358,6 +378,7 @@ class GalleryImageBlock(blocks.StructBlock):
         return {
             "caption": value.get("caption"),
             "image": {
+                "id": value["imagen"].id,
                 "url": value["image"].get_rendition("original").url,
                 "title": value["image"].title
             }
@@ -425,6 +446,7 @@ class LogoConURLBlock(blocks.StructBlock):
 
     def get_api_representation(self, value, context=None):
         return {
+            
             'url': value.get('url', ''),
             'logo_url': value['logo'].file.url if value.get('logo') else None,
         }
@@ -442,7 +464,17 @@ class ListaDeLogosBlock(blocks.StructBlock):
     def get_api_representation(self, value, context=None):
         return {
             'titulo': value['titulo'],
-            'logos': [logo for logo in value['logos']],
+            'logos': [
+                {
+                    'imagen': {
+                        'id': logo['imagen'].id,
+                        'url': logo['imagen'].get_rendition("original").url,
+                        'title': logo['imagen'].title,
+                    } if logo.get('imagen') else None,
+                    'url': logo.get('url')
+                }
+                for logo in value['logos']
+            ]
         }
 
     class Meta:
@@ -473,6 +505,7 @@ common_streamfield = [
     ('PlataForm', PlataformBlock()),
     ('Document', DocumentBlock()),
     ('Socios', ListaDeLogosBlock()),
+    ('ImagenTexto', ImagenConTextoBlock()),
 
 ]
 
@@ -498,6 +531,7 @@ class HomePage(BaseContentPage):
         'home.EventosIndexPage',
         'home.ContactoPage',
         'home.PaginaInformativaPage',
+        'home.ArticlePage',
     ]
     class Meta:
         verbose_name = "Inicio"
@@ -541,7 +575,12 @@ class EventoPage(BaseContentPage):
 
 class PaginaInformativaPage(BaseContentPage):  
     parent_page_types = ['home.HomePage']
+    subpage_types = ['home.ArticlePage']
+
+class ArticlePage(BaseContentPage):
+    parent_page_types = ['home.PaginaInformativaPage']
     subpage_types = []
+
 
 class ContactoPage(BaseContentPage):
     telefono = models.CharField("Teléfono", max_length=20, blank=True)

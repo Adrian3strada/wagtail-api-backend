@@ -10,14 +10,8 @@ class NavItemSerializer(serializers.ModelSerializer):
         fields = ['title', 'page_url', 'children']
 
     def get_page_url(self, obj):
-        return obj.page.url
+        return obj.page.url if obj.page else None
 
     def get_children(self, obj):
-        children = obj.page.get_children().live().in_menu()
-        return [
-            {
-                "title": child.title,
-                "url": child.url
-            }
-            for child in children
-        ]
+        children = obj.children.all().order_by('order')
+        return NavItemSerializer(children, many=True).data
