@@ -9,12 +9,13 @@ from wagtail.documents import urls as wagtaildocs_urls
 from search import views as search_views
 
 from home.api import CustomPagesAPIViewSet
-
+from home.api import FooterAPIViewSet
 from wagtail import hooks
 from wagtail.api.v2.router import WagtailAPIRouter
 
 api_router = WagtailAPIRouter('wagtailapi')
 api_router.register_endpoint('pages', CustomPagesAPIViewSet)
+api_router.register_endpoint('footer', FooterAPIViewSet)
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),

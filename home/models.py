@@ -18,7 +18,33 @@ class NavItem(models.Model):
 
     def __str__(self):
         return self.title
-        
+
+
+@register_snippet
+class FooterLink(models.Model):
+    titulo = models.CharField(max_length=255)
+    url = models.URLField("Enlace", blank=True, null=True)
+
+    panels = [
+        FieldPanel("titulo"),
+        FieldPanel("url"),
+    ]
+
+    api_fields = [
+        APIField("titulo"),
+        APIField("url"),
+    ]
+
+    def __str__(self):
+        return self.titulo
+
+    class Meta:
+        verbose_name = "Elemento del Footer"
+        verbose_name_plural = "Footer"
+
+
+
+
 # apis para imagen
 
 class CustomImageBlock(ImageChooserBlock):
@@ -33,7 +59,11 @@ class CustomImageBlock(ImageChooserBlock):
         }
 
 class CustomPage(Page):
+    show_in_footer = models.BooleanField(default=False)  
+
+
     menu_children = APIField('menu_children')
+    show_in_footer_api = APIField('show_in_footer')  
 
     def get_menu_children(self):
         return [
@@ -48,6 +78,11 @@ class CustomPage(Page):
     def menu_children(self):
         return self.get_menu_children()
 
+    content_panels = Page.content_panels  
+
+    promote_panels = Page.promote_panels + [ 
+        FieldPanel('show_in_footer'),
+    ]
 #quasar 
 
 QUASAR_COLOR_CHOICES = [
@@ -376,7 +411,6 @@ class GalleryImageBlock(blocks.StructBlock):
         return {
             "caption": value.get("caption"),
             "image": {
-                "id": value["imagen"].id,
                 "url": value["image"].get_rendition("original").url,
                 "title": value["image"].title
             }
@@ -602,3 +636,5 @@ class ContactoPage(BaseContentPage):
 
     parent_page_types = ['home.HomePage']
     subpage_types = []
+
+    
