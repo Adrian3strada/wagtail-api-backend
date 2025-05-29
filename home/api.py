@@ -6,7 +6,6 @@ from rest_framework.response import Response
 class CustomPagesAPIViewSet(PagesAPIViewSet):
 
     def listing_view(self, request, *args, **kwargs):
- 
         response = super().listing_view(request, *args, **kwargs)
 
         site = Site.find_for_request(request)
@@ -15,6 +14,12 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
         menu_items = []
 
         if root_page:
+            menu_items.append({
+                'title': root_page.title,
+                'url': root_page.url,
+                'children': []
+            })
+
             for page in root_page.get_children().live().in_menu():
                 item = {
                     'title': page.title,

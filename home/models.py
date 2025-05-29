@@ -301,7 +301,6 @@ class HoverImageBlock(blocks.StructBlock):
 
 
 class MisionBlock(blocks.StructBlock):
-    titulo = blocks.CharBlock(required=True, label="Título")
     imagen_hover = HoverImageBlock(required=True, label="Imagen con overlay")
 
     class Meta:
@@ -311,7 +310,6 @@ class MisionBlock(blocks.StructBlock):
 
     def get_api_representation(self, value, context=None):
         return {
-            "titulo": value.get("titulo"),
             "imagen_hover": self.child_blocks["imagen_hover"].get_api_representation(
                 value["imagen_hover"], context=context
             )
@@ -467,10 +465,10 @@ class ListaDeLogosBlock(blocks.StructBlock):
             'logos': [
                 {
                     'imagen': {
-                        'id': logo['imagen'].id,
-                        'url': logo['imagen'].get_rendition("original").url,
-                        'title': logo['imagen'].title,
-                    } if logo.get('imagen') else None,
+                        'id': logo['logo'].id,
+                        'url': logo['logo'].get_rendition("original").url,
+                        'title': logo['logo'].title,
+                    } if logo.get('logo') else None,
                     'url': logo.get('url')
                 }
                 for logo in value['logos']

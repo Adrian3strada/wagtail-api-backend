@@ -1,17 +1,21 @@
-from rest_framework import serializers
-from .models import NavItem
+from wagtail.models import Page
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-class NavItemSerializer(serializers.ModelSerializer):
-    page_url = serializers.SerializerMethodField()
-    children = serializers.SerializerMethodField()
+def build_menu_tree(page):
+    children = page.get_children().live().in_menu().order_by('path')
+    return {
+        "title": page.title,
+        "url": page.url,
+        "children": [build_menu_tree(child) for child in children]
+    }
 
-    class Meta:
-        model = NavItem
-        fields = ['title', 'page_url', 'children']
+class NavbarAPIView(APIView):
+    def get(self, request):
+        root_page = Page.get_first_root_node()
+        first_level_pages = root_page.get_children().live().in_menu().order_by('path')
 
-    def get_page_url(self, obj):
-        return obj.page.url if obj.page else None
+        menu = [build_menu_tree(page) for page in first_level_pages]
 
-    def get_children(self, obj):
-        children = obj.children.all().order_by('order')
-        return NavItemSerializer(children, many=True).data
+        return Response(menu)
+    

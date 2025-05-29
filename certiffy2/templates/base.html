@@ -48,6 +48,12 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+
+                    <!-- Botón manual de INICIO -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if page.url == '/' %}active{% endif %}" href="/">Inicio</a>
+                    </li>
+
                     {% wagtail_site as current_site %}
                     {% if current_site %}
                     {% with site_root=current_site.root_page %}
