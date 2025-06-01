@@ -1,0 +1,5 @@
+{% for block in self.contenido %}
+{% if block.block_type == 'texto_enriquecido' %}
+{{ block.value|safe }}
+{% endif %}
+{% endfor %}

@@ -38,10 +38,11 @@
 
 <body class="{% block body_class %}{% endblock %}">
     {% wagtailuserbar %}
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Mi Sitio</a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="{% static 'images/certiffy.png' %}" alt="Logo" height="40" class="me-2">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -53,39 +54,36 @@
                         <a class="nav-link {% if page.url == '/' %}active{% endif %}" href="/">Inicio</a>
                     </li>
 
-                    {% wagtail_site as current_site %}
-                    {% if current_site %}
-                    {% with site_root=current_site.root_page %}
-                    {% for parent_page in site_root.get_children.live.in_menu %}
-                    {% with child_pages=parent_page.get_children.live.in_menu %}
-                    {% if child_pages %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ parent_page.url }}"
-                            id="navbarDropdown{{ forloop.counter }}" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            {{ parent_page.title }}
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ forloop.counter }}">
-                            {% for child in child_pages %}
-                            <li><a class="dropdown-item" href="{{ child.url }}">{{ child.title }}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    {% else %}
+                    <!-- Enlace fijo para "Acerca de nosotros" que hace scroll en la misma página -->
                     <li class="nav-item">
-                        <a class="nav-link {% if parent_page == page %}active{% endif %}" href="{{ parent_page.url }}">
-                            {{ parent_page.title }}
-                        </a>
+                        <a class="nav-link" href="#acerca_de">Acerca de nosotros</a>
                     </li>
-                    {% endif %}
-                    {% endwith %}
-                    {% endfor %}
-                    {% endwith %}
-                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#plataforma">Plataforma</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pacto_verde">Pacto Verde</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#eventos">Eventos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#noticias">noticias</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contacto">contacto</a>
+                    </li>
+
+
+
+
+
+
                 </ul>
             </div>
         </div>
     </nav>
+
 
     <main class="container mt-4" id="main-content" tabindex="-1">
         {% block content %}{% endblock %}

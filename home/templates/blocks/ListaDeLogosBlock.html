@@ -1,8 +1,7 @@
 {% load wagtailcore_tags %}
-
-<div class="lista-logos">
-    <h2>{{ self.titulo }}</h2>
-    <div class="logos" style="display: flex; gap: 20px; flex-wrap: wrap;">
+<div class="text-center mb-5">
+    <h3 class="mb-4">{{ self.titulo }}</h3>
+    <div class="d-flex flex-wrap justify-content-center gap-4">
         {% for logo in self.logos %}
         {% include_block logo %}
         {% endfor %}

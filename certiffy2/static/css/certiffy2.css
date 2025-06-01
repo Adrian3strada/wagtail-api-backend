@@ -1,62 +1,274 @@
-#bannerCarousel {
-    max-height: 500px;
-    overflow: hidden;
-    position: relative;
+/* -----------------------------
+   Base Global Styles
+----------------------------- */
+body {
+    font-family: 'Open Sans', ExtraBold, sans-serif;
+    background-color: #f5f7fa;
+    color: #212529;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+    margin: 0;
+    padding: 0;
 }
 
-#bannerCarousel .carousel-item img {
-    height: 500px;
-    object-fit: cover;
-    object-position: center;
+h1,
+h2,
+h3,
+h5 {
+    font-weight: 700;
+    color: #0d1a26;
+    margin-bottom: 1rem;
 }
 
-.banner-title {
-    font-size: 2.5rem;
+p {
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+/* -----------------------------
+   Navbar
+----------------------------- */
+.navbar {
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    background-color: #ffffff;
+}
+
+.navbar a {
+    font-weight: 500;
+    color: #0d1a26 !important;
+    transition: color 0.2s ease;
+}
+
+.navbar a:hover {
+    color: #0d6efd !important;
+}
+
+.navbar-nav .nav-link {
+    color: #ffffff !important;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: #0d6efd !important;
+
+}
+
+.navbar-brand {
+    color: #ffffff !important;
     font-weight: bold;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
-    color: green;
-    text-align: center;
-    padding: 10px;
 }
 
-.video-container {
+/* -----------------------------
+   Hero Banner (Full Height)
+----------------------------- */
+.hero-banner {
     position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
+    background-image: url('/static/img/banner.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
-.video-container iframe {
+.hero-banner::before {
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
 }
 
-@media (max-width: 768px) {
-    #bannerCarousel .carousel-item img {
-        height: 300px;
-    }
-
-    .banner-title {
-        font-size: 1.8rem;
-    }
+.hero-content {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    padding: 2rem;
 }
 
-.nav-link:hover {
-    background-color: green;
+.hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.hero-content p {
+    font-size: 1.25rem;
+}
+
+/* -----------------------------
+   Section Spacing and Layouts
+----------------------------- */
+.section-light {
+    background-color: #ffffff;
+    padding: 6rem 1rem;
+}
+
+.section-dark {
+    background-color: #212529;
+    color: #f8f9fa;
+    padding: 6rem 1rem;
+}
+
+.section-dark h2,
+.section-dark p {
+    color: #f8f9fa;
+}
+
+.section-gradient {
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+    color: white;
+    padding: 6rem 1rem;
+}
+
+/* -----------------------------
+   Container Padding
+----------------------------- */
+.container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* -----------------------------
+   Carousel
+----------------------------- */
+.carousel {
+    margin-bottom: 4rem;
+}
+
+.carousel-inner img {
+    object-fit: cover;
+    height: 500px;
+    border-radius: 12px;
+}
+
+.carousel-caption {
+    bottom: 2rem;
+}
+
+.carousel-caption p {
+    background-color: rgba(0, 0, 0, 0.65);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+/* -----------------------------
+   Cards & Hover Effects
+----------------------------- */
+.card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.25rem;
     color: #0d6efd;
-    text-decoration: none;
 }
 
-
-.social-contact a {
-    color: #333;
-    transition: color 0.3s;
+.card-text,
+.card-body p {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
 }
 
-.social-contact a:hover {
-    color: #007bff;
+/* -----------------------------
+   Buttons
+----------------------------- */
+.btn {
+    padding: 0.6rem 1.4rem;
+    border-radius: 30px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.btn-outline-primary {
+    border-width: 2px;
+}
+
+/* -----------------------------
+   Testimonios Section
+----------------------------- */
+.testimonios {
+    padding: 4rem 1rem;
+    background-color: #e9f5ff;
+    border-radius: 12px;
+}
+
+.testimonios .card {
+    border-left: 4px solid #0d6efd;
+    background: white;
+    margin-bottom: 1.5rem;
+}
+
+/* -----------------------------
+   Media, Certificaciones, Logos
+----------------------------- */
+.row.align-items-center {
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.img-fluid {
+    border-radius: 12px;
+    max-width: 100%;
+    height: auto;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
+}
+
+.d-flex.flex-wrap.gap-4 img {
+    max-height: 80px;
+    transition: transform 0.3s ease;
+}
+
+.d-flex.flex-wrap.gap-4 img:hover {
+    transform: scale(1.1);
+}
+
+/* -----------------------------
+   Video Iframe
+----------------------------- */
+.ratio iframe {
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+}
+
+/* -----------------------------
+   Imagen final / pie de página
+----------------------------- */
+.text-center.mt-5 img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 16px;
+    margin-top: 3rem;
+}
+
+/* -----------------------------
+   Footer
+----------------------------- */
+footer {
+    background-color: #0d1a26;
+    color: #ffffff;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+footer a {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+footer a:hover {
+    color: #0d6efd;
 }

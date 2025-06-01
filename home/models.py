@@ -5,8 +5,10 @@ from wagtail.admin.panels import FieldPanel
 from wagtail.api import APIField
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
+from django import forms
 from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.snippets.models import register_snippet
+from ckeditor.widgets import CKEditorWidget
 
 
 @register_snippet
@@ -247,19 +249,51 @@ class TestimoniosBlock(blocks.StructBlock):
 
 
 class ModuloCertiffyBlock(blocks.StructBlock):
-    video_url = blocks.URLBlock(label="URL del video (YouTube, Vimeo, etc.)")
-    video_caption = blocks.CharBlock(
-        required=False, label="Descripción del video (abajo del reproductor)"
+    tipo_contenido = blocks.ChoiceBlock(
+        choices=[
+            ('video', 'Video'),
+            ('imagen', 'Imagen'),
+        ],
+        label="Tipo de contenido principal",
+        default='video'
     )
-    imagen = ImageChooserBlock(required=False, label="Imagen adicional")  
+    video_url = blocks.URLBlock(
+        required=False,
+        label="URL del video (YouTube, Vimeo, etc.)"
+    )
+    video_caption = blocks.CharBlock(
+        required=False,
+        label="Descripción del video (abajo del reproductor)"
+    )
+    imagen_principal = ImageChooserBlock(
+        required=False,
+        label="Imagen principal"
+    )
+    imagen = ImageChooserBlock(
+        required=False,
+        label="Imagen banner"
+    )
     titulo = blocks.CharBlock(required=True, label="Título")
     descripcion = blocks.TextBlock(required=True, label="Descripción")
     botones = blocks.ListBlock(ButtonBlock(), label="Módulos disponibles")
 
     def get_api_representation(self, value, context=None):
+        contenido_principal = None
+        if value.get("tipo_contenido") == "video":
+            contenido_principal = {
+                "tipo": "video",
+                "video_url": value.get("video_url"),
+                "video_caption": value.get("video_caption")
+            }
+        elif value.get("tipo_contenido") == "imagen" and value.get("imagen_principal"):
+            contenido_principal = {
+                "tipo": "imagen",
+                "imagen_url": value["imagen_principal"].get_rendition("original").url,
+                "imagen_title": value["imagen_principal"].title,
+            }
+
         return {
-            "video_url": value.get("video_url"),
-            "video_caption": value.get("video_caption"),
+            "contenido_principal": contenido_principal,
             "imagen": {
                 "url": value["imagen"].get_rendition("original").url,
                 "title": value["imagen"].title,
@@ -488,6 +522,21 @@ class LogoConURLBlock(blocks.StructBlock):
         label = "Logo con URL"
         template = "blocks/logo_con_url.html"
 
+class DocumentoItemBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=True, label="Título del documento")
+    archivo = DocumentChooserBlock(required=True, label="Archivo")
+
+    class Meta:
+        icon = "doc-full"
+        label = "Documento"
+
+class TextoYDocumentosBlock(blocks.StructBlock):
+    texto = blocks.RichTextBlock(label="Texto explicativo")
+    documentos = blocks.ListBlock(DocumentoItemBlock(), label="Lista de documentos")
+
+    class Meta:
+        icon = "folder-open-inverse"
+        label = "Texto con múltiples documentos"
 
 class ListaDeLogosBlock(blocks.StructBlock):
     titulo = blocks.CharBlock(required=True, label="Título general")
@@ -514,6 +563,15 @@ class ListaDeLogosBlock(blocks.StructBlock):
         label = "Lista de Logos"
         template = "blocks/ListaDeLogosBlock.html"
 
+class CKEditorBlock(blocks.FieldBlock):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.field = forms.CharField(widget=CKEditorWidget(config_name='default'))
+
+    class Meta:
+        icon = "doc-full"
+        label = "Texto Avanzado"
+
 # bloques reutilizables
 
 common_streamfield = [
@@ -538,6 +596,11 @@ common_streamfield = [
     ('Document', DocumentBlock()),
     ('Socios', ListaDeLogosBlock()),
     ('ImagenTexto', ImagenConTextoBlock()),
+    ('parrafo_con_estilo', CKEditorBlock()),
+    ('ducumentocontexto', DocumentoItemBlock()),
+    ('texto_y_documentos', TextoYDocumentosBlock()),
+    ('texto_y_documentos_block', TextoYDocumentosBlock()),
+    ('logo_con_url', LogoConURLBlock()),
 
 ]
 
@@ -565,8 +628,61 @@ class HomePage(BaseContentPage):
         'home.PaginaInformativaPage',
         'home.ArticlePage',
     ]
+
+    def get_context(self, request):
+        context = super().get_context(request)
+
+        children = self.get_children().type(PaginaInformativaPage).live()
+        acerca_de = children.filter(slug="acerca_de").first()
+        plataforma = children.filter(slug="plataforma").first()
+        pacto_verde = children.filter(slug="pacto_verde").first()
+
+        children = self.get_children().type(EventosIndexPage).live()
+        eventos = children.filter(slug="eventos").first()
+
+        children = self.get_children().type(NoticiasIndexPage).live()
+        noticias = children.filter(slug="noticias").first()
+
+        children = self.get_children().type(ContactoPage).live()
+        contacto = children.filter(slug="contacto").first()
+
+        context['acerca_de'] = acerca_de.specific if acerca_de else None
+        context['plataforma'] = plataforma.specific if plataforma else None
+        context['pacto_verde'] = pacto_verde.specific if pacto_verde else None
+        context['eventos'] = eventos.specific if eventos else None
+        context['noticias'] = noticias.specific if noticias else None
+        context['contacto'] = contacto.specific if contacto else None
+
+        if plataforma:
+            subpaginas = plataforma.get_children().type(ArticlePage).live()
+            trazabilidad = subpaginas.filter(slug="trazabilidad").first()
+            administracion = subpaginas.filter(slug="administracion").first()
+            certificacion = subpaginas.filter(slug="certificacion").first()
+            context['trazabilidad'] = trazabilidad.specific if trazabilidad else None
+            context['administracion'] = administracion.specific if administracion else None
+            context['certificacion'] = certificacion.specific if certificacion else None
+        else:
+            context['trazabilidad'] = None
+            context['administracion'] = None
+            context['certificacion'] = None
+
+        if pacto_verde:
+            subpaginas = pacto_verde.get_children().type(ArticlePage).live()
+            union_europea = subpaginas.filter(slug="union-europea").first()
+            due_diligence = subpaginas.filter(slug="due-diligence").first()
+            context['union_europea'] = union_europea.specific if union_europea else None
+            context['due_diligence'] = due_diligence.specific if due_diligence else None
+        else:
+            context['union_europea'] = None
+            context['due_diligence'] = None
+
+        return context
+
+
     class Meta:
         verbose_name = "Inicio"
+
+    
 
 class NoticiasIndexPage(BaseContentPage):
     subpage_types = ['home.NoticiaPage']

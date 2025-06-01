@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "wagtail.api.v2",
     "rest_framework",
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 MIDDLEWARE = [
@@ -208,3 +210,31 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'cache-control',
     'pragma',
 ]
+
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Full',
+        'height': 300,
+        'width': '100%',
+        'toolbar_Custom': [
+            ['Styles', 'Format', 'Font', 'FontSize'],
+            ['Bold', 'Italic', 'Underline', 'Strike'],
+            ['TextColor', 'BGColor'],
+            ['NumberedList', 'BulletedList'],
+            ['Link', 'Unlink'],
+            ['Image', 'Table'],
+            ['Maximize'],
+            ['Source'],
+        ],
+        'toolbar': 'Custom',
+        'extraPlugins': ','.join([
+            'font',  # habilita tamaño/tipo de letra
+            'colorbutton', 'colordialog',  # colores
+        ])
+    }
+}
+
