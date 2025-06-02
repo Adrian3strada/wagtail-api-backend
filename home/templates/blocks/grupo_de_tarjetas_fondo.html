@@ -1,0 +1,12 @@
+{% load wagtailcore_tags %}
+
+
+<div class="container py-5">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for tarjeta in self.tarjetas %}
+        <div class="col">
+            {% include_block tarjeta %}
+        </div>
+        {% endfor %}
+    </div>
+</div>

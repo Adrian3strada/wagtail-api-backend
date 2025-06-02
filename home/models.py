@@ -572,6 +572,98 @@ class CKEditorBlock(blocks.FieldBlock):
         icon = "doc-full"
         label = "Texto Avanzado"
 
+class ImagenTextoDerechaBlock(blocks.StructBlock):
+    texto = blocks.RichTextBlock()
+    imagen = ImageChooserBlock()
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "tipo": "imagen_texto_derecha",
+            "texto": value["texto"].source,
+            "imagen": {
+                "url": value["imagen"].file.url,
+                "alt": value["imagen"].title
+            }
+        }
+
+    class Meta:
+        template = "blocks/imagen_texto_derecha.html"
+        icon = "image"
+        label = "Imagen a la derecha"
+
+
+class ImagenTextoIzquierdaBlock(blocks.StructBlock):
+    texto = blocks.RichTextBlock()
+    imagen = ImageChooserBlock()
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "tipo": "imagen_texto_izquierda",
+            "texto": value["texto"].source,
+            "imagen": {
+                "url": value["imagen"].file.url,
+                "alt": value["imagen"].title
+            }
+        }
+
+    class Meta:
+        template = "blocks/imagen_texto_izquierda.html"
+        icon = "image"
+        label = "Imagen a la izquierda"
+
+
+class ImagenEncimaTextoBlock(blocks.StructBlock):
+    imagen = ImageChooserBlock()
+    texto = blocks.RichTextBlock()
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "tipo": "imagen_encima_texto",
+            "texto": value["texto"].source,
+            "imagen": {
+                "url": value["imagen"].file.url,
+                "alt": value["imagen"].title
+            }
+        }
+
+    class Meta:
+        template = "blocks/imagen_encima_texto.html"
+        icon = "image"
+        label = "Imagen encima del texto"
+
+
+class TarjetaSimpleFondoBlock(blocks.StructBlock):
+    imagen = ImageChooserBlock(label="Imagen")
+    descripcion = blocks.RichTextBlock(label="Descripción")
+
+    class Meta:
+        icon = "image"
+        label = "Tarjeta (imagen y descripción)"
+        template = "blocks/tarjeta_simple_fondo.html"
+
+
+class GrupoDeTarjetasFondoBlock(blocks.StructBlock):
+    tarjetas = blocks.ListBlock(TarjetaSimpleFondoBlock(), label="Tarjetas")
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "tipo": "grupo_de_tarjetas",
+            "tarjetas": [
+                {
+                    "descripcion": item["descripcion"].source,
+                    "imagen": {
+                        "url": item["imagen"].file.url,
+                        "alt": item["imagen"].title
+                    }
+                } for item in value["tarjetas"]
+            ]
+        }
+
+    class Meta:
+        icon = "list-ul"
+        label = "Grupo de Tarjetas solo fondo"
+        template = "blocks/grupo_de_tarjetas_fondo.html"
+
 # bloques reutilizables
 
 common_streamfield = [
@@ -601,6 +693,11 @@ common_streamfield = [
     ('texto_y_documentos', TextoYDocumentosBlock()),
     ('texto_y_documentos_block', TextoYDocumentosBlock()),
     ('logo_con_url', LogoConURLBlock()),
+    ('imagen_texto_derecha', ImagenTextoDerechaBlock()),
+    ('imagen_texto_izquierda', ImagenTextoIzquierdaBlock()),
+    ('imagen_encima_texto', ImagenEncimaTextoBlock()),
+    ('tarjeta_simple_fondo', TarjetaSimpleFondoBlock()),
+    ('grupo_de_tarjetas_fondo', GrupoDeTarjetasFondoBlock()),
 
 ]
 

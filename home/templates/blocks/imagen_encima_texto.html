@@ -1,0 +1,9 @@
+{% load wagtailcore_tags %}
+{% load wagtailimages_tags %}
+{% load static %}
+<div class="text-center my-5">
+    {% image self.imagen original class="img-fluid rounded shadow mb-4" %}
+    <div class="contenido-richtext">
+        {{ self.texto|richtext }}
+    </div>
+</div>

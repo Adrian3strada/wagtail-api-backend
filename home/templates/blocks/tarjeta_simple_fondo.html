@@ -1,0 +1,9 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+
+
+<div class="card h-100 shadow-sm border-0 rounded text-center">
+    {% image self.imagen original class="card-img-top" alt=self.imagen.title %}
+    <div class="card-body">
+        <div class="card-text">{{ self.descripcion|richtext }}</div>
+    </div>
+</div>

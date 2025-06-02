@@ -1,0 +1,11 @@
+{% load wagtailcore_tags %}
+{% load wagtailimages_tags %}
+{% load static %}
+<div class="row align-items-center my-5">
+    <div class="col-md-6">
+        {{ self.texto|richtext }}
+    </div>
+    <div class="col-md-6 text-center">
+        {% image self.imagen original class="img-fluid rounded shadow" %}
+    </div>
+</div>
