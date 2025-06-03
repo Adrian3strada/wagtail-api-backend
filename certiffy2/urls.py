@@ -12,7 +12,6 @@ from home.api import CustomPagesAPIViewSet
 from home.api import FooterAPIViewSet
 from wagtail import hooks
 from wagtail.api.v2.router import WagtailAPIRouter
-from django.conf.urls.i18n import i18n_patterns
 
 api_router = WagtailAPIRouter('wagtailapi')
 api_router.register_endpoint('pages', CustomPagesAPIViewSet)

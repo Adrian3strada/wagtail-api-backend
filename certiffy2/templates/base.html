@@ -1,7 +1,7 @@
-{% load static wagtailcore_tags wagtailuserbar %}
-{% load static %}
+{% load static wagtailcore_tags wagtailuserbar i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="es" data-bs-theme="auto">
+<html lang="{{ LANGUAGE_CODE }}" data-bs-theme="auto">
 
 <head>
     <meta charset="utf-8">
@@ -75,8 +75,6 @@
             </div>
         </div>
     </nav>
-
-
 
     <main class="container mt-4" id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
