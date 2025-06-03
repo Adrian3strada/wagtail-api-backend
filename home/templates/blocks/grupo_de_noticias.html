@@ -1,0 +1,14 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+
+<div class="container py-5">
+    <h2 class="mb-4">Últimas Noticias</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for noticia in self.noticias %}
+        <div class="col">
+            {% include_block noticia %}
+        </div>
+        {% empty %}
+        <p class="text-muted">No hay noticias disponibles.</p>
+        {% endfor %}
+    </div>
+</div>

@@ -9,6 +9,7 @@ from django import forms
 from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.snippets.models import register_snippet
 from ckeditor.widgets import CKEditorWidget
+from wagtail.snippets.blocks import SnippetChooserBlock
 
 
 @register_snippet
@@ -45,7 +46,31 @@ class FooterLink(models.Model):
         verbose_name_plural = "Footer"
 
 
+@register_snippet
+class CategoriaEvento(models.Model):
+    nombre = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
 
+    panels = [
+        FieldPanel('nombre'),
+        FieldPanel('slug'),
+    ]
+
+    def __str__(self):
+        return self.nombre
+
+@register_snippet
+class CategoriaNoticia(models.Model):
+    nombre = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    panels = [
+        FieldPanel("nombre"),
+        FieldPanel("slug"),
+    ]
+
+    def __str__(self):
+        return self.nombre
 
 # apis para imagen
 
@@ -142,7 +167,7 @@ class CardBlock(blocks.StructBlock):
             "descripcion": value["descripcion"],
             "enlace": value.get("enlace"),
             "imagen": {
-                "url": imagen.get_rendition("original").url if imagen else None,
+                 "url": imagen.get_rendition("fill-800x450-c100").url if imagen else None,
                 "title": imagen.title if imagen else None
             } if imagen else None
         }
@@ -193,7 +218,8 @@ class TestimonioBlock(blocks.StructBlock):
     nombre = blocks.CharBlock(required=True, label="Nombre")
     organizacion = blocks.CharBlock(required=False, label="Organización")
     comentario = blocks.TextBlock(required=True, label="Comentario")
-    imagen = CustomImageBlock(required=False, label="Foto del Testimonio")
+    imagen = CustomImageBlock(required=False, label="Imagen principal")
+    fondo = CustomImageBlock(required=False, label="Imagen de fondo")
 
     class Meta:
         icon = "user"
@@ -201,6 +227,7 @@ class TestimonioBlock(blocks.StructBlock):
 
     def get_api_representation(self, value, context=None):
         imagen = value.get("imagen")
+        fondo = value.get("fondo")
         return {
             "nombre": value["nombre"],
             "comentario": value["comentario"],
@@ -208,10 +235,21 @@ class TestimonioBlock(blocks.StructBlock):
             "imagen": {
                 "url": imagen.get_rendition("original").url if imagen else None,
                 "title": imagen.title if imagen else None
-            }
+            } if imagen else None,
+            "fondo": {
+                "url": fondo.get_rendition("fill-1600x600-c100").url if fondo else None,
+                "title": fondo.title if fondo else None
+            } if fondo else None
         }
 
 
+class TestimoniosBlock(blocks.StructBlock):
+    testimonios = blocks.ListBlock(TestimonioBlock(), label="Lista de testimonios")
+
+    class Meta:
+        template = "blocks/testimonios_carrusel.html"  
+        icon = "group"
+        label = "Testimonios Carrusel"
 
 class PactoVerdeBlock(blocks.StructBlock):
     imagen = CustomImageBlock(required=False, label="Imagen")
@@ -229,21 +267,10 @@ class PactoVerdeBlock(blocks.StructBlock):
             "titulo": value["titulo"],
             "descripcion": value["descripcion"],
             "imagen": {
-                "url": imagen.get_rendition("original").url if imagen else None,
+                 "url": imagen.get_rendition("fill-800x450-c100").url if imagen else None,
                 "title": imagen.title if imagen else None
             } if imagen else None
         }
-
-
-
-class TestimoniosBlock(blocks.StructBlock):
-    testimonios = blocks.ListBlock(TestimonioBlock(), label="Lista de testimonios")
-
-    class Meta:
-        template = "blocks/testimonios_carrusel.html"  
-        icon = "group"
-        label = "Testimonios Carrusel"
-
 
 
 
@@ -635,10 +662,11 @@ class ImagenEncimaTextoBlock(blocks.StructBlock):
 class TarjetaSimpleFondoBlock(blocks.StructBlock):
     imagen = ImageChooserBlock(label="Imagen")
     descripcion = blocks.RichTextBlock(label="Descripción")
+    url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
 
     class Meta:
         icon = "image"
-        label = "Tarjeta (imagen y descripción)"
+        label = "Tarjeta clicable (imagen + descripción + URL)"
         template = "blocks/tarjeta_simple_fondo.html"
 
 
@@ -654,15 +682,90 @@ class GrupoDeTarjetasFondoBlock(blocks.StructBlock):
                     "imagen": {
                         "url": item["imagen"].file.url,
                         "alt": item["imagen"].title
-                    }
+                    },
+                    "url": item.get("url")
                 } for item in value["tarjetas"]
             ]
         }
 
     class Meta:
         icon = "list-ul"
-        label = "Grupo de Tarjetas solo fondo"
+        label = "Grupo de Tarjetas clicables"
         template = "blocks/grupo_de_tarjetas_fondo.html"
+
+class CardEventoBlock(blocks.StructBlock):
+    fecha = blocks.DateBlock(required=True, label="Fecha del evento")
+    categoria = SnippetChooserBlock(target_model='home.CategoriaEvento', label="Categoría")
+    titulo = blocks.CharBlock(required=True, label="Título del evento")
+    descripcion = blocks.TextBlock(required=False, label="Descripción")
+    imagen = ImageChooserBlock(required=True, label="Imagen del evento")
+    enlace = blocks.URLBlock(required=False, label="Enlace al evento")
+
+    class Meta:
+        icon = "date"
+        label = "Tarjeta de Evento"
+        template = "blocks/card_evento.html"
+
+    def get_api_representation(self, value, context=None):
+        imagen = value.get("imagen")
+        categoria = value.get("categoria")
+
+        return {
+            "fecha": value["fecha"].strftime('%Y-%m-%d'),
+            "categoria": categoria.nombre if categoria else None,
+            "titulo": value["titulo"],
+            "descripcion": value["descripcion"],
+            "enlace": value.get("enlace"),
+            "imagen": {
+                "url": imagen.get_rendition("fill-800x400-c100").url if imagen else None,
+                "title": imagen.title if imagen else None
+            } if imagen else None
+        }
+
+class EventosGridBlock(blocks.StructBlock):
+    eventos = blocks.ListBlock(CardEventoBlock(), label="Lista de eventos")
+
+    class Meta:
+        icon = "list-ul"
+        label = "Sección de eventos"
+        template = "blocks/eventos_grid.html"
+
+class TarjetaNoticiaBlock(blocks.StructBlock):
+    imagen = ImageChooserBlock(label="Imagen")
+    categoria = SnippetChooserBlock(target_model="home.CategoriaNoticia", label="Categoría")
+    fecha = blocks.DateBlock(label="Fecha de publicación")
+    descripcion = blocks.RichTextBlock(label="Descripción")
+    url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
+
+    class Meta:
+        icon = "doc-full"
+        label = "Noticia"
+        template = "blocks/tarjeta_noticia.html"
+
+class GrupoDeNoticiasBlock(blocks.StructBlock):
+    noticias = blocks.ListBlock(TarjetaNoticiaBlock(), label="Lista de noticias")
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "tipo": "grupo_de_noticias",
+            "noticias": [
+                {
+                    "fecha": item["fecha"].strftime("%Y-%m-%d"),
+                    "categoria": item["categoria"].nombre if item.get("categoria") else None,
+                    "descripcion": item["descripcion"].source,
+                    "url": item.get("url"),
+                    "imagen": {
+                        "url": item["imagen"].get_rendition("fill-800x400-c100").url,
+                        "title": item["imagen"].title
+                    } if item.get("imagen") else None
+                } for item in value["noticias"]
+            ]
+        }
+
+    class Meta:
+        icon = "list-ul"
+        label = "Sección de Noticias"
+        template = "blocks/grupo_de_noticias.html"
 
 # bloques reutilizables
 
@@ -698,6 +801,11 @@ common_streamfield = [
     ('imagen_encima_texto', ImagenEncimaTextoBlock()),
     ('tarjeta_simple_fondo', TarjetaSimpleFondoBlock()),
     ('grupo_de_tarjetas_fondo', GrupoDeTarjetasFondoBlock()),
+    ('card_evento', CardEventoBlock()),
+    ('eventos_grid', EventosGridBlock()),
+    ('tarjeta_noticia', TarjetaNoticiaBlock()),
+    ('grupo_de_noticias', GrupoDeNoticiasBlock()),
+    
 
 ]
 

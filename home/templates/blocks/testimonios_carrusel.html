@@ -1,29 +1,40 @@
-{% load wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags %}
 
-<div id="testimoniosCarousel" class="carousel slide" data-bs-ride="carousel">
+<div id="testimoniosCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
     <div class="carousel-inner">
         {% for testimonio in self.testimonios %}
         <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <div class="d-flex flex-column align-items-center">
-                {% if testimonio.imagen %}
-                {% image testimonio.imagen original as rendition %}
-                <img src="{{ rendition.url }}" alt="{{ testimonio.imagen.title }}" class="d-block mb-3"
-                    style="max-height: 150px;">
+            <div class="position-relative text-white">
+                {% if testimonio.fondo %}
+                <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden"
+                    style="z-index: 0; opacity: 0.3;">
+                    {% image testimonio.fondo fill-1600x600-c100 class="w-100 h-100 object-fit-cover" %}
+                </div>
                 {% endif %}
-                <p class="fw-bold fs-5">{{ testimonio.nombre }}</p>
-                <p>{{ testimonio.comentario }}</p>
-                <p>{{ testimonio.organizacion }}</p>
+
+                <div class="container py-5 position-relative" style="z-index: 1;">
+                    {% if testimonio.imagen %}
+                    <div class="mb-4">
+                        {% image testimonio.imagen original class="img-fluid shadow" %}
+                    </div>
+                    {% endif %}
+                    <blockquote class="blockquote">
+                        <p class="fs-5 fw-light">“{{ testimonio.comentario }}”</p>
+                        <footer class="blockquote-footer text-white-50 mt-3">
+                            {{ testimonio.nombre }}
+                            {% if testimonio.organizacion %} – {{ testimonio.organizacion }}{% endif %}
+                        </footer>
+                    </blockquote>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
 
     <button class="carousel-control-prev" type="button" data-bs-target="#testimoniosCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
+        <span class="carousel-control-prev-icon"></span>
     </button>
     <button class="carousel-control-next" type="button" data-bs-target="#testimoniosCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
+        <span class="carousel-control-next-icon"></span>
     </button>
 </div>

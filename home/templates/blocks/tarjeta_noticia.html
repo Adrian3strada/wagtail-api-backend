@@ -1,0 +1,14 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+
+<a href="{{ self.url }}" class="text-decoration-none text-reset d-block h-100">
+    <div class="card h-100 border-0 shadow-sm rounded overflow-hidden">
+        {% image self.imagen fill-800x400-c100 class="card-img-top" %}
+        <div class="card-body">
+            <p class="mb-1 text-uppercase small text-muted">
+                {{ self.fecha|date:"d M Y" }}
+                {% if self.categoria %} · {{ self.categoria.nombre }}{% endif %}
+            </p>
+            <div class="card-text small">{{ self.descripcion|richtext }}</div>
+        </div>
+    </div>
+</a>

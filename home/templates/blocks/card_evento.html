@@ -1,0 +1,20 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+
+<div class="card h-100 border-0 shadow-sm rounded overflow-hidden">
+    <div class="position-relative bg-light text-center p-3" style="border-bottom: 4px solid #ff0033;">
+        <div class="position-absolute top-0 start-0 text-center p-2">
+            <div class="text-danger fs-3 fw-bold">{{ self.fecha|date:"d" }}</div>
+            <div class="text-uppercase small text-muted">{{ self.fecha|date:"b" }}</div>
+        </div>
+        {% image self.imagen fill-800x300-c100 class="img-fluid" %}
+    </div>
+
+    <div class="px-3 pt-3 pb-4">
+        <p class="text-uppercase small fw-bold text-danger mb-1">{{ self.categoria }}</p>
+        <h5 class="card-title mb-2">{{ self.titulo }}</h5>
+        <p class="card-text text-muted small">{{ self.descripcion }}</p>
+        {% if self.enlace %}
+        <a href="{{ self.enlace }}" class="stretched-link"></a>
+        {% endif %}
+    </div>
+</div>

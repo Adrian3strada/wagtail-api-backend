@@ -2,7 +2,7 @@
 
 <div class="bg-{{ self.estilo|default:'white' }} rounded-lg shadow-md overflow-hidden max-w-sm mx-auto">
     {% if self.imagen %}
-    {% image self.imagen original as img %}
+    {% image self.imagen fill-800x450-c100 class="img-fluid rounded shadow" %}
     <img src="{{ img.url }}" alt="{{ img.alt }}" class="w-full h-48 object-cover">
     {% endif %}
 

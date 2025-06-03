@@ -2,7 +2,7 @@
 <div class="gallery">
     {% for item in self.images %}
     <figure>
-        {% image item.image original %}
+        {% image self.imagen fill-800x450-c100 class="img-fluid rounded shadow" %}
         {% if item.caption %}
         <figcaption>{{ item.caption }}</figcaption>
         {% endif %}

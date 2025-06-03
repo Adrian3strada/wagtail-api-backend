@@ -1,7 +1,7 @@
 {% load wagtailimages_tags %}
 
 <div class="hover-image-block" style="position: relative;">
-    {% image self.image fill-800x600 %}
+    {% image self.imagen fill-800x450-c100 class="img-fluid rounded shadow" %}
     <div class="overlay overlay-{{ self.color_overlay }}">
         {% if self.texto_overlay %}
         <p>{{ self.texto_overlay }}</p>

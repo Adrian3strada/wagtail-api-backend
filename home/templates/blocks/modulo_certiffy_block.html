@@ -20,7 +20,7 @@
     {# Imagen adicional opcional #}
     {% if self.imagen %}
     <div class="image-section" style="margin-bottom: 1em;">
-        {% image self.imagen original as img %}
+        {% image self.imagen fill-800x450-c100 class="img-fluid rounded shadow" %}
         <img src="{{ img.url }}" alt="{{ img.alt }}" style="max-width: 100%; height: auto;">
     </div>
     {% endif %}
