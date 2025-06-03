@@ -10,6 +10,9 @@ from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.snippets.models import register_snippet
 from ckeditor.widgets import CKEditorWidget
 from wagtail.snippets.blocks import SnippetChooserBlock
+from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
+from wagtail.images.models import Image
+from wagtail.documents.models import Document
 
 
 @register_snippet
@@ -22,6 +25,15 @@ class NavItem(models.Model):
     def __str__(self):
         return self.title
 
+@register_setting
+class SiteBranding(BaseSiteSetting):
+    logo = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    favicon = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+
+    panels = [
+        FieldPanel("logo"),
+        FieldPanel("favicon"),
+    ]
 
 @register_snippet
 class FooterLink(models.Model):
@@ -361,13 +373,36 @@ class CarouselImageBlock(blocks.StructBlock):
 
 class CarouselBlock(blocks.StructBlock):
     images = blocks.ListBlock(CarouselImageBlock(), label="Imágenes")
-    video_url = blocks.URLBlock(required=False, label="Video (URL de YouTube o Vimeo)")
-    mostrar_video = blocks.BooleanBlock(required=False, default=True, label="Mostrar video")
+    
+    # Video de muestra (teaser)
+    teaser_video_url = blocks.URLBlock(
+        required=False, label="Video de muestra (URL de YouTube o Vimeo)"
+    )
+    
+    # Video principal (se abre al darle clic al teaser)
+    main_video_url = blocks.URLBlock(
+        required=False, label="Video principal (URL de YouTube o Vimeo)"
+    )
+    
+    mostrar_video = blocks.BooleanBlock(
+        required=False, default=True, label="Mostrar video"
+    )
 
     class Meta:
         icon = "image"
         label = "Carrusel con video"
         template = "blocks/carrusel_block.html"
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "images": [
+                CarouselImageBlock().get_api_representation(img, context)
+                for img in value.get("images", [])
+            ],
+            "teaser_video_url": value.get("teaser_video_url"),
+            "main_video_url": value.get("main_video_url"),
+            "mostrar_video": value.get("mostrar_video"),
+        }
 
 
 class HoverImageBlock(blocks.StructBlock):

@@ -1,36 +1,31 @@
-from wagtail.models import Page, Site
+# home/api/views.py
+
+from wagtail.models import Page
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from home.models import SiteBranding  # importa tu modelo de branding
+
+def build_menu_tree(page):
+    children = page.get_children().live().in_menu().order_by('path')
+    return {
+        "title": page.title,
+        "url": page.url,
+        "children": [build_menu_tree(child) for child in children]
+    }
 
 class NavbarAPIView(APIView):
     def get(self, request):
-        site = Site.objects.get(is_default_site=True)
-        root = site.root_page
+        root_page = Page.get_first_root_node()
+        first_level_pages = root_page.get_children().live().in_menu().order_by('path')
+        menu = [build_menu_tree(page) for page in first_level_pages]
 
-        data = []
+        # Obtén logo y favicon
+        branding = SiteBranding.for_request(request)
+        logo_url = branding.logo.file.url if branding.logo else None
+        favicon_url = branding.favicon.file.url if branding.favicon else None
 
-
-        if root.live:
-            data.append({
-                "title": "Inicio",
-                "url": root.url,
-                "children": []
-            })
-
-        menu_items = Page.objects.filter(live=True, show_in_menus=True).exclude(id=root.id)
-
-        for item in menu_items:
-            children = item.get_children().live().in_menu()
-            data.append({
-                "title": item.title,
-                "url": item.url,
-                "children": [
-                    {
-                        "title": child.title,
-                        "url": child.url
-                    }
-                    for child in children
-                ]
-            })
-
-        return Response({"navbar": data})
+        return Response({
+            "navbar": menu,
+            "logo": logo_url,
+            "favicon": favicon_url
+        })

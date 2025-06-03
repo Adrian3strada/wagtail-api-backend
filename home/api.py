@@ -1,10 +1,9 @@
-from wagtail.api.v2.views import PagesAPIViewSet
+from wagtail.api.v2.views import PagesAPIViewSet, BaseAPIViewSet
 from wagtail.models import Site
-from wagtail.api.v2.router import WagtailAPIRouter
 from rest_framework.response import Response
-from wagtail.api.v2.views import BaseAPIViewSet
-from home.models import FooterLink
+from home.models import FooterLink, SiteBranding  # Importa SiteBranding correctamente
 from .models import CustomPage
+
 
 class CustomPagesAPIViewSet(PagesAPIViewSet):
 
@@ -37,7 +36,16 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
 
                 menu_items.append(item)
 
+        # Obtener branding del sitio
+        branding = SiteBranding.for_request(request)
+        logo_url = branding.logo.file.url if branding.logo else None
+        favicon_url = branding.favicon.file.url if branding.favicon else None
+
+        # Añadir navbar, logo y favicon a la respuesta
         response.data['navbar'] = menu_items
+        response.data['logo'] = logo_url
+        response.data['favicon'] = favicon_url
+
         return response
 
 
