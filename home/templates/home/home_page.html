@@ -2,6 +2,8 @@
 {% load wagtailcore_tags wagtailimages_tags %}
 {% load static %}
 {% block content %}
+{% load i18n %}
+
 <div class="container py-5">
 
 
@@ -66,7 +68,7 @@
                 </div>
                 {% if tarjeta.enlace %}
                 <div class="card-footer bg-white border-0">
-                    <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">Ver más</a>
+                    <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">{% trans "Ver más" %}</a>
                 </div>
                 {% endif %}
             </div>

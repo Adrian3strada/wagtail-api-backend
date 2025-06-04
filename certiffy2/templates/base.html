@@ -1,5 +1,9 @@
 {% load static wagtailcore_tags wagtailuserbar i18n %}
 {% get_current_language as LANGUAGE_CODE %}
+
+{% load i18n %}
+
+
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}" data-bs-theme="auto">
 
@@ -53,28 +57,32 @@
                     <li class="nav-item">
                         <a class="nav-link {% if page.url == '/' %}active{% endif %}" href="/">Inicio</a>
                     </li>
+                    <li class="nav-item"><a class="nav-link" href="#acerca_de">Acerca de nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#plataforma">Plataforma</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pacto_verde">Pacto Verde</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#eventos">Eventos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#noticias">Noticias</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+
+
                     <li class="nav-item">
-                        <a class="nav-link" href="#acerca_de">Acerca de nosotros</a>
+                        <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center ms-3">
+                            {% csrf_token %}
+                            <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
+                           <option value="es" {% if LANGUAGE_CODE == "es" %}selected{% endif %}>ES</option>
+<option value="en" {% if LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
+<option value="fr" {% if LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
+
+
+                            </select>
+                        </form>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#plataforma">Plataforma</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#pacto_verde">Pacto Verde</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#eventos">Eventos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#noticias">Noticias</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contacto">Contacto</a>
-                    </li>
+
                 </ul>
             </div>
         </div>
     </nav>
+
 
     <main class="container mt-4" id="main-content" tabindex="-1">
         {% block content %}{% endblock %}

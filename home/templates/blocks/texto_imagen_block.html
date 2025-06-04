@@ -1,11 +1,63 @@
+{% load wagtailcore_tags %}
 {% load wagtailimages_tags %}
 
-<div class="plataform-block">
-    <div class="image-section">
-        {% image value.imagen original as img %}
-        <img src="{{ img.url }}" alt="{{ img.alt }}" class="img-fluid">
+<div class="bloque-imagen-texto posicion-{{ self.posicion_imagen }}">
+
+    {% if self.titulo %}
+    <h2 class="bloque-titulo">{{ self.titulo|richtext }}</h2>
+    {% endif %}
+
+    {% if self.posicion_imagen == "fondo" or self.posicion_imagen == "herobanner" %}
+    {% if self.imagen %}
+    <div class="bloque-fondo" style="background-image: url('{{ self.imagen.url }}');">
+
+        <div class="bloque-texto fondo-texto">
+            {{ self.texto|richtext }}
+        </div>
     </div>
-    <div class="text-section">
-        <p>{{ value.texto }}</p>
+    {% endif %}
+
+    {% elif self.posicion_imagen == "izquierda" or self.posicion_imagen == "derecha" %}
+    <div class="bloque-contenido flex-layout">
+        {% if self.posicion_imagen == "izquierda" and self.imagen %}
+        <div class="bloque-imagen">
+            {% image self.imagen original %}
+        </div>
+        {% endif %}
+
+        <div class="bloque-texto">
+            {{ self.texto|richtext }}
+        </div>
+
+        {% if self.posicion_imagen == "derecha" and self.imagen %}
+        <div class="bloque-imagen">
+            {% image self.imagen original %}
+        </div>
+        {% endif %}
     </div>
+
+    {% elif self.posicion_imagen == "abajo" %}
+    <div class="bloque-texto">
+        {{ self.texto|richtext }}
+    </div>
+    {% if self.imagen %}
+    <div class="bloque-imagen">
+        {% image self.imagen original %}
+    </div>
+    {% endif %}
+
+    {% elif self.posicion_imagen == "galeria" %}
+    <div class="bloque-texto">
+        {{ self.texto|richtext }}
+    </div>
+    {% if self.galeria %}
+    <div class="bloque-galeria">
+        {% for img in self.galeria %}
+        <div class="galeria-item">
+            {% image img original %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
 </div>

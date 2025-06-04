@@ -3,7 +3,8 @@ from wagtail.models import Page
 from wagtail.fields import StreamField
 from wagtail.admin.panels import FieldPanel
 from wagtail.api import APIField
-from wagtail import blocks
+from wagtail import blocks 
+from wagtail.blocks import StructBlock, ChoiceBlock, RichTextBlock, ListBlock
 from wagtail.images.blocks import ImageChooserBlock
 from django import forms
 from wagtail.documents.blocks import DocumentChooserBlock
@@ -13,7 +14,9 @@ from wagtail.snippets.blocks import SnippetChooserBlock
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.images.models import Image
 from wagtail.documents.models import Document
-
+from wagtail.rich_text import RichText
+from wagtail_localize.models import TranslatableMixin
+from django.utils.translation import gettext_lazy as _
 
 @register_snippet
 class NavItem(models.Model):
@@ -474,26 +477,43 @@ class PlataformBlock(blocks.StructBlock):
                 for boton in value.get("botones", [])
             ],
         }
-
+        
 class ImagenConTextoBlock(blocks.StructBlock):
-    imagen = ImageChooserBlock(required=True, label="Imagen")
-    texto = blocks.CharBlock(required=True, label="Texto largo")
-
-    class Meta:
-        template = "blocks/texto_imagen_block.html"
-        icon = "image"
-        label = "Imagen y texto"
+    titulo = RichTextBlock(required=False)
+    texto = RichTextBlock()
+    posicion_imagen = ChoiceBlock(choices=[
+        ('fondo', 'Fondo'),
+        ('izquierda', 'Izquierda'),
+        ('derecha', 'Derecha'),
+        ('abajo', 'Abajo'),
+        ('galeria', 'Galería'),
+    ])
+    imagen = ImageChooserBlock(required=False)
+    galeria = ListBlock(ImageChooserBlock(), required=False)
 
     def get_api_representation(self, value, context=None):
         return {
+            "titulo": str(value.get("titulo")) if value.get("titulo") else "",
+            "texto": str(value.get("texto")) if value.get("texto") else "",
+            "posicion_imagen": value.get("posicion_imagen"),
             "imagen": {
                 "id": value["imagen"].id,
                 "url": value["imagen"].get_rendition("original").url,
-                "title": value["imagen"].title,
-            },
-            "texto": value["texto"],
-          
+                "title": value["imagen"].title
+            } if value.get("imagen") else None,
+            "galeria": [
+                {
+                    "id": img.id,
+                    "url": img.get_rendition("original").url,
+                    "title": img.title
+                } for img in value.get("galeria", [])
+            ]
         }
+
+    class Meta:
+        icon = 'image'
+        label = 'Bloque de Imagen y Texto'
+        template = 'blocks/texto_imagen_block.html'
 
 class GalleryImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
@@ -634,64 +654,7 @@ class CKEditorBlock(blocks.FieldBlock):
         icon = "doc-full"
         label = "Texto Avanzado"
 
-class ImagenTextoDerechaBlock(blocks.StructBlock):
-    texto = blocks.RichTextBlock()
-    imagen = ImageChooserBlock()
 
-    def get_api_representation(self, value, context=None):
-        return {
-            "tipo": "imagen_texto_derecha",
-            "texto": value["texto"].source,
-            "imagen": {
-                "url": value["imagen"].file.url,
-                "alt": value["imagen"].title
-            }
-        }
-
-    class Meta:
-        template = "blocks/imagen_texto_derecha.html"
-        icon = "image"
-        label = "Imagen a la derecha"
-
-
-class ImagenTextoIzquierdaBlock(blocks.StructBlock):
-    texto = blocks.RichTextBlock()
-    imagen = ImageChooserBlock()
-
-    def get_api_representation(self, value, context=None):
-        return {
-            "tipo": "imagen_texto_izquierda",
-            "texto": value["texto"].source,
-            "imagen": {
-                "url": value["imagen"].file.url,
-                "alt": value["imagen"].title
-            }
-        }
-
-    class Meta:
-        template = "blocks/imagen_texto_izquierda.html"
-        icon = "image"
-        label = "Imagen a la izquierda"
-
-
-class ImagenEncimaTextoBlock(blocks.StructBlock):
-    imagen = ImageChooserBlock()
-    texto = blocks.RichTextBlock()
-
-    def get_api_representation(self, value, context=None):
-        return {
-            "tipo": "imagen_encima_texto",
-            "texto": value["texto"].source,
-            "imagen": {
-                "url": value["imagen"].file.url,
-                "alt": value["imagen"].title
-            }
-        }
-
-    class Meta:
-        template = "blocks/imagen_encima_texto.html"
-        icon = "image"
-        label = "Imagen encima del texto"
 
 
 class TarjetaSimpleFondoBlock(blocks.StructBlock):
@@ -831,9 +794,6 @@ common_streamfield = [
     ('texto_y_documentos', TextoYDocumentosBlock()),
     ('texto_y_documentos_block', TextoYDocumentosBlock()),
     ('logo_con_url', LogoConURLBlock()),
-    ('imagen_texto_derecha', ImagenTextoDerechaBlock()),
-    ('imagen_texto_izquierda', ImagenTextoIzquierdaBlock()),
-    ('imagen_encima_texto', ImagenEncimaTextoBlock()),
     ('tarjeta_simple_fondo', TarjetaSimpleFondoBlock()),
     ('grupo_de_tarjetas_fondo', GrupoDeTarjetasFondoBlock()),
     ('card_evento', CardEventoBlock()),

@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     "wagtail.admin",
     "corsheaders",
     "wagtail",
+    "wagtail_localize",
+    "wagtail_localize.locales",
+   
+   
     "modelcluster",
     "taggit",
     "django_filters",
@@ -55,6 +59,10 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'wagtail.contrib.settings',
+
+    "modeltranslation",
+   
+
 ]
 
 MIDDLEWARE = [
@@ -130,24 +138,23 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = True  
+
+
+WAGTAIL_I18N_ENABLED = True
 
 USE_TZ = True
 
 
-LANGUAGES = [
-    ('es', _('Español')),
-    ('en', _('Inglés')),
-    ('fr', _('Francés')),
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
+    ("en", "English"),
+    ("fr", "French"),
+    ("es", "Spanish"),
+    ("pt", "Portuguese"),
+    ("de", "German"),
 ]
-
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
