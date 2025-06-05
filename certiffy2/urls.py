@@ -11,20 +11,17 @@ from search import views as search_views
 from home.api import CustomPagesAPIViewSet, FooterAPIViewSet
 from wagtail.api.v2.router import WagtailAPIRouter
 from home.views import NavbarAPIView
+
+from django.conf.urls.i18n import i18n_patterns  
+
 # API
 api_router = WagtailAPIRouter('wagtailapi')
 api_router.register_endpoint('pages', CustomPagesAPIViewSet)
 api_router.register_endpoint('footer', FooterAPIViewSet)
 
-from django.conf.urls.i18n import i18n_patterns  
-
 urlpatterns = [
-   
     path('i18n/', include('django.conf.urls.i18n')),
-    path('api/v2/', api_router.urls),
-    path('api/navbar/', NavbarAPIView.as_view(), name='navbar_api'),     
 ]
-
 
 urlpatterns += i18n_patterns(
     path("django-admin/", admin.site.urls),
@@ -32,11 +29,15 @@ urlpatterns += i18n_patterns(
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
-       
-    path("", include("home.urls")), 
-    path("", include(wagtail_urls)),  
+    
+    path("api/v2/", api_router.urls),
+    path("api/navbar/", NavbarAPIView.as_view(), name="navbar_api"),
+
+    path("", include("home.urls")),
+    path("", include(wagtail_urls)),
 )
 
+# Static files
 if settings.DEBUG:
     from django.conf.urls.static import static
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns

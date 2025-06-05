@@ -68,13 +68,18 @@
                     <li class="nav-item">
                         <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center ms-3">
                             {% csrf_token %}
-                            <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
-                           <option value="es" {% if LANGUAGE_CODE == "es" %}selected{% endif %}>ES</option>
-<option value="en" {% if LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
-<option value="fr" {% if LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
+                     <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
+    <option value="es" {% if LANGUAGE_CODE == "es" %}selected{% endif %}>
+        🇪🇸 Español
+    </option>
+    <option value="en" {% if LANGUAGE_CODE == "en" %}selected{% endif %}>
+        🇬🇧 English
+    </option>
+    <option value="fr" {% if LANGUAGE_CODE == "fr" %}selected{% endif %}>
+        🇫🇷 Français
+    </option>
+</select>
 
-
-                            </select>
                         </form>
                     </li>
 
