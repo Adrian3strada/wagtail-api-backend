@@ -88,16 +88,28 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
 
             for child in children:
                 child_translated = child.get_translation_or_none(current_locale) or child
-                child_item = build_menu_tree(child)
-                if child_item:
-                    item['children'].append(child_item)
+                child_item = {
+                    'title': child_translated.title,
+                    'url': get_translated_url(child_translated),
+                    'children': []
+                }
+                item['children'].append(child_item)
             return item
 
         menu_items = []
         if root_page:
+            root_translated = root_page.get_translation_or_none(current_locale) or root_page
+            root_item = {
+                'title': 'Inicio',  # O usa: root_translated.title
+                'url': f"/{current_language}/",
+                'children': []
+            }
+
             for page in root_page.get_children().live().in_menu():
-                if menu_item := build_menu_tree(page):
-                    menu_items.append(menu_item)
+                if child_item := build_menu_tree(page):
+                    root_item['children'].append(child_item)
+
+            menu_items.append(root_item)
 
         branding = SiteBranding.for_request(request)
         response.data.update({
@@ -159,7 +171,7 @@ class FooterAPIViewSet(PagesAPIViewSet):
                 'url': get_translated_url(translated_root)
             })
 
-            # Agregar hijas directas
+           
             for child in root_page.get_children().live().in_menu():
                 translated_child = child.get_translation_or_none(current_locale) or child
                 footer_items.append({
