@@ -43,8 +43,6 @@ INSTALLED_APPS = [
     "wagtail",
     "wagtail_localize",
     "wagtail_localize.locales",
-   
-   
     "modelcluster",
     "taggit",
     "django_filters",
@@ -137,6 +135,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
+
+LANGUAGE_CODE = 'es'
 
 USE_I18N = True
 

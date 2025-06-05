@@ -461,20 +461,21 @@ class PlataformBlock(blocks.StructBlock):
         label = "Contenido con Imagen"
 
     def get_api_representation(self, value, context=None):
+        imagen = value.get('imagen')
         return {
             "imagen": {
-                "id": value["imagen"].id,
-                "url": value["imagen"].get_rendition("original").url,
-                "title": value["imagen"].title,
-            },
-            "titulo": value["titulo"],
-            "descripcion": value["descripcion"],
+                "id": imagen.id,
+                "url": imagen.get_rendition("original").url,
+                "title": imagen.title,
+            } if imagen else None,
+            "titulo": value.get('titulo', ''),
+            "descripcion": value.get('descripcion', ''),
             "botones": [
                 {
-                    "texto": boton["texto"],
-                    "url": boton["url"],
+                    "texto": boton.get('texto', ''),
+                    "url": boton.get('url', ''),
                 }
-                for boton in value.get("botones", [])
+                for boton in value.get('botones', [])
             ],
         }
         
@@ -492,21 +493,24 @@ class ImagenConTextoBlock(blocks.StructBlock):
     galeria = ListBlock(ImageChooserBlock(), required=False)
 
     def get_api_representation(self, value, context=None):
+        imagen = value.get("imagen")
+        galeria = value.get("galeria", [])
+        
         return {
             "titulo": str(value.get("titulo")) if value.get("titulo") else "",
             "texto": str(value.get("texto")) if value.get("texto") else "",
             "posicion_imagen": value.get("posicion_imagen"),
             "imagen": {
-                "id": value["imagen"].id,
-                "url": value["imagen"].get_rendition("original").url,
-                "title": value["imagen"].title
-            } if value.get("imagen") else None,
+                "id": imagen.id,
+                "url": imagen.get_rendition("original").url,
+                "title": imagen.title
+            } if imagen else None,
             "galeria": [
                 {
                     "id": img.id,
                     "url": img.get_rendition("original").url,
                     "title": img.title
-                } for img in value.get("galeria", [])
+                } for img in galeria if img is not None
             ]
         }
 
@@ -636,7 +640,7 @@ class ListaDeLogosBlock(blocks.StructBlock):
                     } if logo.get('logo') else None,
                     'url': logo.get('url')
                 }
-                for logo in value['logos']
+                for logo in value.get('logos', []) if logo.get('logo') is not None
             ]
         }
 
@@ -949,8 +953,8 @@ class ContactoPage(BaseContentPage):
         APIField("direccion"),
         APIField("horario"),
     ]
-
     parent_page_types = ['home.HomePage']
     subpage_types = []
 
     
+
