@@ -8,7 +8,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 
-from home.api import CustomPagesAPIViewSet, FooterAPIViewSet
+from home.api import CustomPagesAPIViewSet, FooterAPIViewSet, LocalesAPIViewSet
 from wagtail.api.v2.router import WagtailAPIRouter
 from home.views import NavbarAPIView
 
@@ -18,20 +18,25 @@ from django.conf.urls.i18n import i18n_patterns
 api_router = WagtailAPIRouter('wagtailapi')
 api_router.register_endpoint('pages', CustomPagesAPIViewSet)
 api_router.register_endpoint('footer', FooterAPIViewSet)
+api_router.register_endpoint('locales', LocalesAPIViewSet)
+
 
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
+    path("admin/", include(wagtailadmin_urls)),
+    path("api/v2/", api_router.urls),
+    path("api/navbar/", NavbarAPIView.as_view(), name="navbar_api"),
+    
 ]
 
 urlpatterns += i18n_patterns(
     path("django-admin/", admin.site.urls),
-    path("admin/", include(wagtailadmin_urls)),
+   
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     
-    path("api/v2/", api_router.urls),
-    path("api/navbar/", NavbarAPIView.as_view(), name="navbar_api"),
+
 
     path("", include("home.urls")),
     path("", include(wagtail_urls)),

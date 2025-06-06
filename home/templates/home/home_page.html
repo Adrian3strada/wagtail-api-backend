@@ -37,10 +37,12 @@
     <iframe id="videoFrame" src="{{ block.value.teaser_video_url }}" title="Video de muestra" allowfullscreen></iframe>
 </div>
 <div class="text-center mb-5">
-    <button class="btn btn-primary" onclick="switchToMainVideo('{{ block.value.main_video_url }}')">
-        Mirar
+    <button class="btn btn-primary" style="text-transform: none;"
+        onclick="switchToMainVideo('{{ block.value.main_video_url }}')">
+        {% trans "Mirar" %}
     </button>
 </div>
+
 <script>
     function switchToMainVideo(url) {
         const iframe = document.getElementById('videoFrame');
@@ -135,7 +137,7 @@
 </div>
 
 
-{# Bloque Pacto-Verde #}
+
 {% if block.block_type == 'pacto-verde' %}
 <div class="row align-items-center mb-5">
     <div class="col-md-6">
@@ -163,9 +165,9 @@
                 <div>{{ texto|richtext }}</div>
                 {% endfor %}
             </div>
-
             <div class="card-footer bg-white border-0">
-                <a href="{{ tarjeta.enlace.url }}" class="btn btn-{{ tarjeta.enlace.style }}">
+                <a href="{{ tarjeta.enlace.url }}" class="btn btn-{{ tarjeta.enlace.style }}"
+                    style="text-transform: none;">
                     {{ tarjeta.enlace.text }}
                 </a>
             </div>

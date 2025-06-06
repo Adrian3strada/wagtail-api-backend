@@ -1,5 +1,3 @@
-
-
 from wagtail.models import Page
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,48 +10,43 @@ from django.utils.translation import check_for_language
 
 class NavbarAPIView(APIView):
     def get(self, request):
-        current_language = None
-
-        lang_param = request.GET.get('locale') or request.GET.get('lang')
-        if lang_param and check_for_language(lang_param):
-            current_language = lang_param
-
-        if not current_language:
-            accept_language = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
-            if accept_language:
-                for language in accept_language.split(','):
-                    lang_code = language.split(';')[0].strip().lower()[:2]
-                    if check_for_language(lang_code):
-                        current_language = lang_code
-                        break
-
-        if not current_language:
+      
+        locale_param = request.GET.get('locale')
+        
+        
+        if locale_param and check_for_language(locale_param):
+            current_language = locale_param
+            activate(current_language)
+        else:
             current_language = get_language()
-    
-        activate(current_language)
     
         try:
             current_locale = Locale.objects.get(language_code=current_language)
         except Locale.DoesNotExist:
             current_locale = Locale.get_default()
             current_language = current_locale.language_code
+            activate(current_language)
 
+   
         root_page = Page.get_first_root_node()
         menu_pages = (
             root_page.get_children()
             .live()
             .in_menu()
             .filter(locale=current_locale)
+            .specific()
             .order_by('path')
         )
         
         def build_menu_tree(page):
+        
             translated_page = page.get_translation_or_none(current_locale) or page
             children = (
                 page.get_children()
                 .live()
                 .in_menu()
                 .filter(locale=current_locale)
+                .specific()
                 .order_by('path')
             )
             
@@ -68,15 +61,12 @@ class NavbarAPIView(APIView):
             
             return menu_item
 
-     
         menu = [build_menu_tree(page) for page in menu_pages]
         branding = SiteBranding.for_request(request)
-        logo_url = branding.logo.file.url if branding.logo else None
-        favicon_url = branding.favicon.file.url if branding.favicon else None
-
+        
         return Response({
             "navbar": menu,
-            "logo": logo_url,
-            "favicon": favicon_url,
+            "logo": branding.logo.file.url if branding and branding.logo else None,
+            "favicon": branding.favicon.file.url if branding and branding.favicon else None,
             "current_language": current_language
         })

@@ -138,6 +138,17 @@ LOCALE_PATHS = [
 
 LANGUAGE_CODE = 'es'
 
+
+
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
+    ("es", "Spanish"),
+    ("en", "English"),
+    ("fr", "French"),
+    
+    ("pt", "Portuguese"),
+    ("de", "German"),
+]
+
 USE_I18N = True
 
 USE_L10N = True  
@@ -147,14 +158,6 @@ WAGTAIL_I18N_ENABLED = True
 
 USE_TZ = True
 
-
-WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
-    ("en", "English"),
-    ("fr", "French"),
-    ("es", "Spanish"),
-    ("pt", "Portuguese"),
-    ("de", "German"),
-]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

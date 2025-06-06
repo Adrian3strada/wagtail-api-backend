@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-05 09:38-0600\n"
+"POT-Creation-Date: 2025-06-05 16:47-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\home\templates\home\home_page.html:41
+msgid "Mirar"
+msgstr "Regarder"
+
 #: .\home\templates\home\home_page.html:71
 msgid "Ver más"
-msgstr ""
+msgstr "Voir Plus"
 
 #: .\home\templates\home\welcome_page.html:6
 msgid "Visit the Wagtail website"
