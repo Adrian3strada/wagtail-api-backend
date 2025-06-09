@@ -23,220 +23,208 @@
             </div>
             {% endfor %}
         </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
     </div>
 
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
-</div>
-{% if block.value.mostrar_video and block.value.teaser_video_url and block.value.main_video_url %}
-<div class="ratio ratio-16x9 mb-3">
-    <iframe id="videoFrame" src="{{ block.value.teaser_video_url }}" title="Video de muestra" allowfullscreen></iframe>
-</div>
-<div class="text-center mb-5">
-    <button class="btn btn-primary" style="text-transform: none;"
-        onclick="switchToMainVideo('{{ block.value.main_video_url }}')">
-        {% trans "Mirar" %}
-    </button>
-</div>
-
-<script>
-    function switchToMainVideo(url) {
-        const iframe = document.getElementById('videoFrame');
-        iframe.src = url;
-    }
-</script>
-{% endif %}
-
-{% elif block.block_type == 'cards' %}
-<div class="container my-5">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        {% for tarjeta in block.value.tarjetas %}
-        <div class="col">
-            <div class="card h-100 shadow-sm border-0 rounded">
-                {% if tarjeta.imagen %}
-                <div class="ratio ratio-16x9">
-
-                    {% image tarjeta.imagen original class="card-img-top" alt=tarjeta.titulo %}
-                </div>
-
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ tarjeta.titulo }}</h5>
-                    <p class="card-text">{{ tarjeta.descripcion }}</p>
-                </div>
-                {% if tarjeta.enlace %}
-                <div class="card-footer bg-white border-0">
-                    <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">{% trans "Ver más" %}</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
+    {% if block.value.mostrar_video and block.value.teaser_video_url and block.value.main_video_url %}
+    <div class="ratio ratio-16x9 mb-3">
+        <iframe id="videoFrame" src="{{ block.value.teaser_video_url }}" title="Video de muestra"
+            allowfullscreen></iframe>
     </div>
-</div>
+    <div class="text-center mb-5">
+        <button class="btn btn-primary" style="text-transform: none;"
+            onclick="switchToMainVideo('{{ block.value.main_video_url }}')">
+            {% trans "Mirar" %}
+        </button>
+    </div>
+    <script>
+        function switchToMainVideo(url) {
+            const iframe = document.getElementById('videoFrame');
+            iframe.src = url;
+        }
+    </script>
+    {% endif %}
 
-{% if block.block_type == 'testimonios' %}
-<section class="py-5" style="background-color: #ffffff !important; position: relative; z-index: 999;">
-    <div class="container" style="position: relative; z-index: 999;">
-        <div class="row justify-content-center">
-            {% for testimonio in block.value.testimonios %}
-            <div class="col-md-8">
-                <div style="
-                    background-color: #ffffff !important;
-                    color: #0A1A42 !important;
-                    padding: 2rem;
-                    border-left: 5px solid #DFBB43;
-                    border-radius: 10px;
-                    margin-bottom: 1.5rem;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                    position: relative;
-                    z-index: 999;">
-                    <blockquote class="blockquote mb-0">
-                        <p style="font-size: 1.3rem; font-weight: 600; color: #0A1A42 !important;">“{{ testimonio.texto
-                            }}”</p>
-                        <footer class="blockquote-footer" style="color: #6c757d !important;">{{ testimonio.autor }}
-                        </footer>
-                    </blockquote>
+    {% elif block.block_type == 'cards' %}
+    <div class="container my-5">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for tarjeta in block.value.tarjetas %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded">
+                    {% if tarjeta.imagen %}
+                    <div class="ratio ratio-16x9">
+                        {% image tarjeta.imagen original class="card-img-top" alt=tarjeta.titulo %}
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tarjeta.titulo }}</h5>
+                        <p class="card-text">{{ tarjeta.descripcion }}</p>
+                    </div>
+                    {% if tarjeta.enlace %}
+                    <div class="card-footer bg-white border-0">
+                        <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">{% trans "Ver más" %}</a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-</section>
-{% endif %}
 
-
-{% elif block.block_type == 'modulo_certiffy' %}
-<div class="row align-items-center mb-5">
-    <div class="col-md-6">
-        {% if block.value.tipo_contenido == 'video' and block.value.video_url %}
-        <div class="ratio ratio-16x9 mb-3">
-            <iframe src="{{ block.value.video_url|safe }}" frameborder="0" allowfullscreen></iframe>
-        </div>
-        {% if block.value.video_caption %}
-        <p class="text-muted small">{{ block.value.video_caption }}</p>
-        {% endif %}
-        {% elif block.value.tipo_contenido == 'imagen' and block.value.imagen_principal %}
-        {% image block.value.imagen_principal original class="img-fluid rounded shadow" alt="Imagen del módulo" %}
-        {% endif %}
-    </div>
-
-    <div class="col-md-6 text-start">
-        <h3>{{ block.value.titulo }}</h3>
-        <p>{{ block.value.descripcion }}</p>
-        {% for btn in block.value.botones %}
-        <a href="{{ btn.url }}" class="btn btn-amarillo btn-cta me-2 mb-2">
-            {{ btn.text }}
-        </a>
-        {% endfor %}
-    </div>
-</div>
-
-
-
-{% if block.block_type == 'pacto-verde' %}
-<div class="row align-items-center mb-5">
-    <div class="col-md-6">
-        {% if block.value.imagen %}
-        {% image block.value.imagen original as img %}
-        <img src="{{ img.url }}" class="img-fluid rounded shadow" alt="{{ img.alt }}">
-        {% endif %}
-    </div>
-    <div class="col-md-6">
-        <h3>{{ block.value.titulo }}</h3>
-        <p>{{ block.value.descripcion }}</p>
-    </div>
-</div>
-{% endif %}
-
-{% elif block.block_type == 'cardsED' %}
-<div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
-    {% for tarjeta in block.value.tarjetas %}
-    <div class="col">
-        <div class="card h-100 border-0 shadow">
-            <div class="card-body text-start">
-                <h5 class="card-title">{{ tarjeta.titulo }}</h5>
-                <p>{{ tarjeta.descripcion|richtext }}</p>
-                {% for texto in tarjeta.textos_adicionales %}
-                <div>{{ texto|richtext }}</div>
+    {% if block.block_type == 'testimonios' %}
+    <section class="py-5" style="background-color: #ffffff !important;">
+        <div class="container">
+            <div class="row justify-content-center">
+                {% for testimonio in block.value.testimonios %}
+                <div class="col-md-8">
+                    <div
+                        style="background-color: #ffffff; color: #0A1A42; padding: 2rem; border-left: 5px solid #DFBB43; border-radius: 10px; margin-bottom: 1.5rem; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                        <blockquote class="blockquote mb-0">
+                            <p style="font-size: 1.3rem; font-weight: 600;">“{{ testimonio.texto }}”</p>
+                            <footer class="blockquote-footer">{{ testimonio.autor }}</footer>
+                        </blockquote>
+                    </div>
+                </div>
                 {% endfor %}
             </div>
-            <div class="card-footer bg-white border-0">
-                <a href="{{ tarjeta.enlace.url }}" class="btn btn-{{ tarjeta.enlace.style }}"
-                    style="text-transform: none;">
-                    {{ tarjeta.enlace.text }}
-                </a>
+        </div>
+    </section>
+    {% endif %}
+
+
+    {% elif block.block_type == 'modulo_certiffy' %}
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            {% if block.value.tipo_contenido == 'video' and block.value.video_url %}
+            <div class="ratio ratio-16x9 mb-3">
+                <iframe src="{{ block.value.video_url|safe }}" frameborder="0" allowfullscreen></iframe>
             </div>
+            {% if block.value.video_caption %}
+            <p class="text-muted small">{{ block.value.video_caption }}</p>
+            {% endif %}
+            {% elif block.value.tipo_contenido == 'imagen' and block.value.imagen_principal %}
+            {% image block.value.imagen_principal original class="img-fluid rounded shadow" alt="Imagen del módulo" %}
+            {% endif %}
+        </div>
+
+        <div class="col-md-6 text-start">
+            <h3>{{ block.value.titulo }}</h3>
+            <p>{{ block.value.descripcion }}</p>
+            {% for btn in block.value.botones %}
+            <a href="{{ btn.url }}" class="btn btn-amarillo btn-cta me-2 mb-2">
+                {{ btn.text }}
+            </a>
+            {% endfor %}
         </div>
     </div>
-    {% endfor %}
-</div>
 
 
-{% elif block.block_type == 'cards' %}
-<div class="container my-5">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+    {% if block.block_type == 'pacto-verde' %}
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            {% if block.value.imagen %}
+            {% image block.value.imagen original as img %}
+            <img src="{{ img.url }}" class="img-fluid rounded shadow" alt="{{ img.alt }}">
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h3>{{ block.value.titulo }}</h3>
+            <p>{{ block.value.descripcion }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif block.block_type == 'cardsED' %}
+    <div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
         {% for tarjeta in block.value.tarjetas %}
         <div class="col">
-            <div class="card h-100 shadow-sm border-0 rounded">
-                {% if tarjeta.imagen %}
-                <div class="ratio ratio-16x9">
-
-                    {% image tarjeta.imagen original class="card-img-top" alt=tarjeta.titulo %}
-                </div>
-
-                {% endif %}
-                <div class="card-body">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-body text-start">
                     <h5 class="card-title">{{ tarjeta.titulo }}</h5>
-                    <p class="card-text">{{ tarjeta.descripcion }}</p>
+                    <p>{{ tarjeta.descripcion|richtext }}</p>
+                    {% for texto in tarjeta.textos_adicionales %}
+                    <div>{{ texto|richtext }}</div>
+                    {% endfor %}
                 </div>
-                {% if tarjeta.enlace %}
                 <div class="card-footer bg-white border-0">
-                    <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">Ver más</a>
+                    <a href="{{ tarjeta.enlace.url }}" class="btn btn-{{ tarjeta.enlace.style }}"
+                        style="text-transform: none;">
+                        {{ tarjeta.enlace.text }}
+                    </a>
                 </div>
-                {% endif %}
             </div>
         </div>
         {% endfor %}
     </div>
-</div>
 
-{% elif block.block_type == 'socios' %}
-<div class="text-center mb-5">
-    <h3 class="mb-4">{{ block.value.titulo }}</h3>
-    <div class="d-flex flex-wrap justify-content-center gap-4">
-        {% for logo in block.value.logos %}
-        <a href="{{ logo.url }}" target="_blank" rel="noopener noreferrer">
-            {% if logo.imagen and logo.imagen.url %}
-            <img src="{{ logo.imagen.url }}" alt="{{ logo.imagen.title }}" class="img-fluid" style="max-height: 100px;">
-            {% else %}
-            <div class="text-danger">Imagen no disponible</div>
-            {% endif %}
-        </a>
-        {% endfor %}
+
+    {% elif block.block_type == 'cards' %}
+    <div class="container my-5">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for tarjeta in block.value.tarjetas %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded">
+                    {% if tarjeta.imagen %}
+                    <div class="ratio ratio-16x9">
+
+                        {% image tarjeta.imagen original class="card-img-top" alt=tarjeta.titulo %}
+                    </div>
+
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tarjeta.titulo }}</h5>
+                        <p class="card-text">{{ tarjeta.descripcion }}</p>
+                    </div>
+                    {% if tarjeta.enlace %}
+                    <div class="card-footer bg-white border-0">
+                        <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">Ver más</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
-{% elif block.block_type == 'parrafo_con_estilo' %}
-<div class="contenido-richtext mb-5">
-    {{ block.value|richtext }}
-</div>
-{% else %}
-{{ block }}
-{% endif %}
-{% empty %}
 
-<p class="text-center">No hay contenido aún.</p>
-{% endfor %}
+    {% elif block.block_type == 'socios' %}
+    <div class="text-center mb-5">
+        <h3 class="mb-4">{{ block.value.titulo }}</h3>
+        <div class="d-flex flex-wrap justify-content-center gap-4">
+            {% for logo in block.value.logos %}
+            <a href="{{ logo.url }}" target="_blank" rel="noopener noreferrer">
+                {% if logo.imagen and logo.imagen.url %}
+                <img src="{{ logo.imagen.url }}" alt="{{ logo.imagen.title }}" class="img-fluid"
+                    style="max-height: 100px;">
+                {% else %}
+                <div class="text-danger">Imagen no disponible</div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif block.block_type == 'parrafo_con_estilo' %}
+    <div class="contenido-richtext mb-5">
+        {{ block.value|richtext }}
+    </div>
+    {% else %}
+    {{ block }}
+    {% endif %}
+    {% empty %}
 
-{% if page.imagen %}
-<div class="text-center mt-5">
-    {% image page.imagen width-800 class="img-fluid rounded shadow" %}
-</div>
-{% endif %}
+    <p class="text-center">No hay contenido aún.</p>
+    {% endfor %}
+
+    {% if page.imagen %}
+    <div class="text-center mt-5">
+        {% image page.imagen width-800 class="img-fluid rounded shadow" %}
+    </div>
+    {% endif %}
 </div>
 
 

@@ -1,7 +1,9 @@
 {% load wagtailimages_tags %}
+{% load wagtailcore_tags %}
+{% load static %}
 
-{% if block.block_type == "carousel" %}
-<div id="carouselImages" class="carousel slide position-relative mb-5" data-bs-ride="carousel">
+{% if block.block_type == "carousel" and block.value.images %}
+<div id="carouselImages" class="carousel slide carousel-fade mb-5" data-bs-ride="carousel">
 
     <!-- Indicadores -->
     <div class="carousel-indicators">
@@ -12,23 +14,27 @@
         {% endfor %}
     </div>
 
-    <!-- Imágenes -->
-    <div class="carousel-inner h-100">
+    <!-- Carrusel de Imágenes -->
+    <div class="carousel-inner">
         {% for image_block in block.value.images %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %} h-100">
+        <div class="carousel-item {% if forloop.first %}active{% endif %}"
+            style="min-height: 80vh; position: relative;">
             {% image image_block.image original as img %}
-            <img src="{{ img.url }}" class="d-block w-100 h-100 carousel-image"
-                alt="{{ image_block.caption|default:'Imagen del carrusel' }}">
+            <img src="{{ img.url }}" class="d-block w-100 h-100 object-fit-cover"
+                alt="{{ image_block.caption|default:'Imagen del carrusel' }}"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">
+
             {% if image_block.caption %}
-            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-2 rounded">
-                <p>{{ image_block.caption }}</p>
+            <div class="carousel-caption d-none d-md-block"
+                style="position: relative; z-index: 1; background-color: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px;">
+                <p class="fs-5">{{ image_block.caption }}</p>
             </div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
 
-    <!-- Botones -->
+    <!-- Botones de control -->
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Anterior</span>
@@ -39,7 +45,7 @@
     </button>
 </div>
 
-<!-- Video teaser con botón para ver video completo -->
+<!-- Video teaser + botón -->
 {% if block.value.mostrar_video and block.value.teaser_video_url and block.value.main_video_url %}
 <div class="ratio ratio-16x9 mb-3">
     <iframe id="videoFrame" src="{{ block.value.teaser_video_url }}" frameborder="0" allowfullscreen
@@ -52,16 +58,60 @@
 </div>
 <script>
     function switchToMainVideo(url) {
-        const iframe = document.getElementById('videoFrame');
-        iframe.src = url;
+        document.getElementById('videoFrame').src = url;
     }
 </script>
-{% endif %}
 
-<!-- Alternativa: renderiza video único si no hay teaser/main separados -->
+<!-- Alternativa: solo un video -->
 {% elif block.value.mostrar_video and block.value.video_url %}
 <div class="mt-4 ratio ratio-16x9">
     <iframe src="{{ block.value.video_url | safe }}" frameborder="0" allowfullscreen></iframe>
 </div>
 {% endif %}
+
+<style>
+    #carouselImages {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+    }
+
+    #carouselImages .carousel-item {
+        position: relative;
+        min-height: 100vh;
+        /* altura total de la ventana */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    #carouselImages img {
+        object-fit: cover;
+        width: 100%;
+        height: 100vh;
+        /* altura total de la ventana */
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    #carouselImages .carousel-caption {
+        max-width: 700px;
+        margin: 0 auto;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+        position: relative;
+        z-index: 1;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+        #carouselImages .carousel-caption {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+    }
+</style>
+
 {% endif %}

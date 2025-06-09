@@ -769,6 +769,52 @@ class GrupoDeNoticiasBlock(blocks.StructBlock):
         label = "Sección de Noticias"
         template = "blocks/grupo_de_noticias.html"
 
+
+class ModuloBlock(blocks.StructBlock):
+    imagen = ImageChooserBlock(required=True, label="Imagen del módulo")
+    titulo = blocks.CharBlock(required=True, label="Título del botón")
+    enlace = blocks.URLBlock(required=False, label="URL del botón (opcional)")
+
+    def get_api_representation(self, value, context=None):
+        imagen = value.get('imagen')
+        return {
+            "imagen": {
+                "id": imagen.id,
+                "url": imagen.get_rendition("original").url,
+                "title": imagen.title,
+            } if imagen else None,
+            "titulo": value.get('titulo', ''),
+            "enlace": value.get('enlace', ''),
+        }
+
+    class Meta:
+        icon = "placeholder"
+        label = "Módulo individual"
+
+
+
+class ModulosCertiffyBlockNuevo(blocks.StructBlock):
+    titulo_seccion = blocks.CharBlock(required=True, label="Título de la sección")
+    texto_principal = blocks.RichTextBlock(required=True, label="Texto introductorio")
+    video_url = blocks.URLBlock(required=False, label="URL del video introductorio (opcional)")
+    modulos = blocks.ListBlock(ModuloBlock, label="Módulos")
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "titulo_seccion": value.get("titulo_seccion", ""),
+            "texto_principal": str(value.get("texto_principal", "")),
+            "video_url": value.get("video_url", ""),
+            "modulos": [
+                self.child_blocks['modulos'].child_block.get_api_representation(modulo, context)
+                for modulo in value.get("modulos", [])
+            ],
+        }
+
+    class Meta:
+        icon = "folder-open-inverse"
+        label = "Bloque de módulos Certiffy"
+        template = "blocks/modulos_certiffy.html"
+
 # bloques reutilizables
 
 common_streamfield = [
@@ -804,6 +850,9 @@ common_streamfield = [
     ('eventos_grid', EventosGridBlock()),
     ('tarjeta_noticia', TarjetaNoticiaBlock()),
     ('grupo_de_noticias', GrupoDeNoticiasBlock()),
+    
+    ('modulos_certiffy', ModulosCertiffyBlockNuevo()),
+  
     
 
 ]

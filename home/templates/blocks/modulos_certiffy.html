@@ -1,0 +1,95 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+<style>
+    .titulo-seccion {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #DFBB43;
+        margin-bottom: 1.5rem;
+    }
+
+    .texto-principal {
+        font-size: 1.25rem;
+        color: #0A1A42;
+        max-width: 900px;
+        margin: 0 auto 2rem auto;
+        line-height: 1.6;
+    }
+
+    .modulo-img-container {
+        width: 250px;
+        height: 250px;
+        overflow: hidden;
+    }
+
+    .modulo-img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .modulo-video-container {
+        position: relative;
+        width: 100%;
+        max-width: 960px;
+        margin: 3rem auto 0 auto;
+        padding-bottom: 56.25%;
+        /* 16:9 */
+        height: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .modulo-video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .btn-modulo {
+        font-size: 1rem;
+        padding: 0.75rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+</style>
+
+<div class="container text-center my-5">
+    <div class="titulo-seccion">
+        {{ self.titulo_seccion|richtext }}
+    </div>
+
+    <div class="texto-principal">
+        {{ self.texto_principal|richtext }}
+    </div>
+
+    <div class="row justify-content-center">
+        {% for modulo in self.modulos %}
+        <div class="col-md-4 mb-4">
+            {% if modulo.imagen %}
+            {% image modulo.imagen fill-400x250 as img %}
+            <img src="{{ img.url }}" class="img-fluid mb-3 rounded shadow-sm" alt="{{ modulo.titulo }}">
+            {% endif %}
+
+            {% if modulo.enlace %}
+            <a href="{{ modulo.enlace }}" class="btn btn-primary btn-lg w-100 btn-modulo" style="text-transform: none;">
+                {{ modulo.titulo }}
+            </a>
+            {% else %}
+            <button class="btn btn-primary btn-lg w-100 btn-modulo" disabled style="text-transform: none;">
+                {{ modulo.titulo }}
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if self.video_url %}
+    <div class="modulo-video-container">
+        <iframe src="{{ self.video_url }}" title="Video principal de la sección" allowfullscreen></iframe>
+    </div>
+    {% endif %}
+</div>
