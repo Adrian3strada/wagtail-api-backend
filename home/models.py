@@ -1,22 +1,26 @@
+import datetime
+from datetime import date
+from django import forms
 from django.db import models
-from wagtail.models import Page
-from wagtail.fields import StreamField
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from wagtail import blocks
 from wagtail.admin.panels import FieldPanel
 from wagtail.api import APIField
-from wagtail import blocks 
-from wagtail.blocks import StructBlock, ChoiceBlock, RichTextBlock, ListBlock
-from wagtail.images.blocks import ImageChooserBlock
-from django import forms
+from wagtail.fields import StreamField
+from wagtail.models import Page
+from wagtail.rich_text import RichText
+from wagtail.blocks import ChoiceBlock, ListBlock, RichTextBlock, StructBlock
 from wagtail.documents.blocks import DocumentChooserBlock
-from wagtail.snippets.models import register_snippet
-from ckeditor.widgets import CKEditorWidget
+from wagtail.images.blocks import ImageChooserBlock
 from wagtail.snippets.blocks import SnippetChooserBlock
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
-from wagtail.images.models import Image
 from wagtail.documents.models import Document
-from wagtail.rich_text import RichText
+from wagtail.images.models import Image
+from wagtail.snippets.models import register_snippet
 from wagtail_localize.models import TranslatableMixin
-from django.utils.translation import gettext_lazy as _
+from ckeditor.widgets import CKEditorWidget
+
 
 @register_snippet
 class NavItem(models.Model):
@@ -661,10 +665,12 @@ class CKEditorBlock(blocks.FieldBlock):
 
 
 
+
 class TarjetaSimpleFondoBlock(blocks.StructBlock):
     imagen = ImageChooserBlock(label="Imagen")
     descripcion = blocks.RichTextBlock(label="Descripción")
     url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
+    categoria = SnippetChooserBlock(required=False, target_model="home.CategoriaNoticia", label="Categoría")
 
     class Meta:
         icon = "image"
@@ -672,19 +678,24 @@ class TarjetaSimpleFondoBlock(blocks.StructBlock):
         template = "blocks/tarjeta_simple_fondo.html"
 
 
+
 class GrupoDeTarjetasFondoBlock(blocks.StructBlock):
+    titulo_apartado = blocks.CharBlock(required=True, label="Título del apartado")
     tarjetas = blocks.ListBlock(TarjetaSimpleFondoBlock(), label="Tarjetas")
 
     def get_api_representation(self, value, context=None):
         return {
             "tipo": "grupo_de_tarjetas",
+            "titulo_apartado": value.get("titulo_apartado"),
             "tarjetas": [
                 {
+                    "fecha": date.today().strftime("%Y-%m-%d"),  
+                    "categoria": item["categoria"].nombre if item.get("categoria") else None,
                     "descripcion": item["descripcion"].source,
                     "imagen": {
-                        "url": item["imagen"].file.url,
+                        "url": item["imagen"].get_rendition("fill-800x400-c100").url,
                         "alt": item["imagen"].title
-                    },
+                    } if item.get("imagen") else None,
                     "url": item.get("url")
                 } for item in value["tarjetas"]
             ]
@@ -732,10 +743,10 @@ class EventosGridBlock(blocks.StructBlock):
         label = "Sección de eventos"
         template = "blocks/eventos_grid.html"
 
+
 class TarjetaNoticiaBlock(blocks.StructBlock):
     imagen = ImageChooserBlock(label="Imagen")
     categoria = SnippetChooserBlock(target_model="home.CategoriaNoticia", label="Categoría")
-    fecha = blocks.DateBlock(label="Fecha de publicación")
     descripcion = blocks.RichTextBlock(label="Descripción")
     url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
 
@@ -745,14 +756,16 @@ class TarjetaNoticiaBlock(blocks.StructBlock):
         template = "blocks/tarjeta_noticia.html"
 
 class GrupoDeNoticiasBlock(blocks.StructBlock):
+    titulo_apartado = blocks.CharBlock(required=True, label="Título del apartado de noticias") 
     noticias = blocks.ListBlock(TarjetaNoticiaBlock(), label="Lista de noticias")
 
     def get_api_representation(self, value, context=None):
         return {
             "tipo": "grupo_de_noticias",
+            "titulo_apartado": value.get("titulo_apartado"),
             "noticias": [
                 {
-                    "fecha": item["fecha"].strftime("%Y-%m-%d"),
+                    "fecha": datetime.date.today().strftime("%Y-%m-%d"),  # Se agrega automáticamente
                     "categoria": item["categoria"].nombre if item.get("categoria") else None,
                     "descripcion": item["descripcion"].source,
                     "url": item.get("url"),
@@ -942,12 +955,22 @@ class NoticiasIndexPage(BaseContentPage):
     parent_page_types = ['home.HomePage']
 
 class NoticiaPage(BaseContentPage):
-    fecha = models.DateField("Fecha de Publicación", auto_now_add=True, editable=False)
+    fecha = models.DateField("Fecha de Publicación", auto_now_add=True, editable=False) 
+    categoria = models.ForeignKey(
+        'home.CategoriaNoticia',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='noticias'
+    )
 
-    content_panels = BaseContentPage.content_panels
+    content_panels = BaseContentPage.content_panels + [
+        FieldPanel('categoria'),
+    ]
 
     api_fields = BaseContentPage.api_fields + [
         APIField("fecha"),
+        APIField("categoria"),  
     ]
 
     subpage_types = []

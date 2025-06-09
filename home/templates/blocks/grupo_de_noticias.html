@@ -1,7 +1,12 @@
 {% load wagtailcore_tags wagtailimages_tags %}
+{% if self.titulo_apartado %}
+<div class="container mb-4">
+    <h2 class="fw-bold text-center">{{ self.titulo_apartado }}</h2>
+</div>
+{% endif %}
 
 <div class="container py-5">
-    <h2 class="mb-4">Últimas Noticias</h2>
+
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for noticia in self.noticias %}
         <div class="col">

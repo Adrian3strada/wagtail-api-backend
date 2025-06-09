@@ -104,12 +104,22 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
                 root_item['children'].append(build_menu_tree(page))
             menu_items.append(root_item)
 
+        locales = Locale.objects.all()
+        aviailable_languages = [
+        {
+            "code": locale.language_code,
+            "display_name": locale.get_display_name()
+        }
+        for locale in locales 
+        ]
+
         branding = SiteBranding.for_request(request)
         response.data.update({
             'navbar': menu_items,
             'logo': branding.logo.file.url if branding and branding.logo else None,
             'favicon': branding.favicon.file.url if branding and branding.favicon else None,
-            'current_language': lang
+            'current_language': lang,
+            'available_languages': aviailable_languages
         })
         return response
 

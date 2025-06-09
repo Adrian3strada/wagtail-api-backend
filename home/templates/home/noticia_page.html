@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}{{ page.title }} - Noticias{% endblock %}
+
 
 {% block content %}
 <article>
     <h2>{{ page.title }}</h2>
+    {% if page.categoria %}
+    <p class="categoria"><strong>Categoría:</strong> {{ page.categoria.nombre }}</p>
+    {% endif %}
     <p><small>Publicado el {{ page.fecha }}</small></p>
     {% for block in page.body %}
     {{ block }}

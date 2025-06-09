@@ -1,12 +1,59 @@
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailimages_tags %}
 
+{% if self.titulo_apartado %}
+<div class="container mb-4">
+    <h2 class="fw-bold text-center">{{ self.titulo_apartado }}</h2>
+</div>
+{% endif %}
 
-<div class="container py-5">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="container">
+    <div class="row g-4">
         {% for tarjeta in self.tarjetas %}
-        <div class="col">
-            {% include_block tarjeta %}
+        <div class="col-md-6 col-lg-4">
+            <div class="event-card position-relative text-white rounded-4 overflow-hidden" style="height: 400px;">
+                {% image tarjeta.imagen original as imagen %}
+                <div class="bg-image"
+                    style="background-image: url('{{ imagen.url }}'); height: 100%; background-size: cover; background-position: center;">
+                </div>
+
+
+
+                <div class="position-absolute bottom-0 p-3 bg-gradient w-100">
+                    <p class="mb-2 text-uppercase small text-muted fw-semibold">
+                        {% now "d M Y" %}
+                        {% if tarjeta.categoria %} · {{ tarjeta.categoria.nombre }}{% endif %}
+                    <h4 class="fw-bold mb-1">{{ tarjeta.titulo }}</h4>
+                    <p class="small mb-0">{{ tarjeta.descripcion }}</p>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .bg-gradient {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    }
+
+    .event-card {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .bg-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+    }
+
+    .event-card .position-absolute {
+        z-index: 1;
+    }
+</style>
