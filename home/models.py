@@ -25,6 +25,7 @@ from modelcluster.tags import ClusterTaggableManager
 from taggit.models import TaggedItemBase
 
 
+
 @register_snippet
 class NavItem(models.Model):
     title = models.CharField(max_length=255)
@@ -964,7 +965,10 @@ class HomePage(BaseContentPage):
 
     
 
-class NoticiasIndexPage(Page):
+from taggit.models import Tag
+
+
+class NoticiasIndexPage(BaseContentPage):
 
     subpage_types = ['home.NoticiaPage']
 
@@ -982,13 +986,21 @@ class NoticiasIndexPage(Page):
         if tag:
             noticias = noticias.filter(tags__slug=tag)
 
+        noticia_ids = noticias.values_list('id', flat=True)
+
+        tag_ids = NoticiaPageTag.objects.filter(
+            content_object_id__in=noticia_ids  # ← aquí la corrección
+        ).values_list('tag_id', flat=True)
+
+        tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
+
         context['noticias'] = noticias
         context['categorias'] = CategoriaNoticia.objects.all()
-        context['tags'] = NoticiaPage.tags.model.objects.all()
+        context['tags'] = tags_relacionados
         context['current_categoria'] = categoria
         context['current_tag'] = tag
 
-        return context  
+        return context
 
 class NoticiaPage(BaseContentPage):
     fecha = models.DateField("Fecha de Publicación", auto_now_add=True, editable=False) 

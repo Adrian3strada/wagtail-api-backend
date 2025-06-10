@@ -19,7 +19,7 @@
     {% if page.tags.all %}
     <p class="etiquetas"><strong>Etiquetas:</strong>
         {% for tag in page.tags.all %}
-        <span class="tag">{{ tag }}</span>{% if not forloop.last %}, {% endif %}
+        <a href="?tag={{ tag.slug }}" class="tag">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
         {% endfor %}
     </p>
     {% endif %}

@@ -151,7 +151,12 @@ class FooterAPIViewSet(PagesAPIViewSet):
         root_page = site.root_page if site else None
 
         def get_translated_url(page):
-            return f"/{current_language}{page.url}" if not page.url.startswith(f'/{current_language}') else page.url
+            if page.url.startswith(f'/{current_language}/') or page.url == f'/{current_language}':
+                return page.url
+            elif page.url == '/':
+                return f'/{current_language}/'
+            else:
+                return f'/{current_language}{page.url}'
 
         footer_items = []
 
@@ -179,7 +184,6 @@ class FooterAPIViewSet(PagesAPIViewSet):
             'favicon': branding.favicon.file.url if branding and branding.favicon else None,
             'current_language': current_language
         })
-
 
 
 class LocalesAPIViewSet(BaseAPIViewSet):
