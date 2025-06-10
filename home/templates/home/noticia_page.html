@@ -1,16 +1,27 @@
 {% extends "base.html" %}
 
-
-
 {% block content %}
 <article>
     <h2>{{ page.title }}</h2>
+
     {% if page.categoria %}
     <p class="categoria"><strong>Categoría:</strong> {{ page.categoria.nombre }}</p>
     {% endif %}
+
+
+
     <p><small>Publicado el {{ page.fecha }}</small></p>
+
     {% for block in page.body %}
     {{ block }}
     {% endfor %}
+
+    {% if page.tags.all %}
+    <p class="etiquetas"><strong>Etiquetas:</strong>
+        {% for tag in page.tags.all %}
+        <span class="tag">{{ tag }}</span>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
 </article>
 {% endblock %}

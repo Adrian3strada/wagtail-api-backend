@@ -10,47 +10,54 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
     def get_locale_language(self, request):
         supported_languages = set(Locale.objects.values_list('language_code', flat=True))
 
-        lang = request.GET.get('locale')
+        locale_param = request.GET.get('locale')
+        if locale_param and locale_param in supported_languages:
+            return locale_param
 
-        if not lang:
-            lang = get_language_from_request(request)
+        path_parts = request.path.strip("/").split("/")
+        lang_from_url = next((part for part in path_parts if part in supported_languages), None)
+        if lang_from_url:
+            return lang_from_url
 
-        if not lang:
-            path_parts = request.path.strip("/").split("/")
-            lang = next((part for part in path_parts if part in supported_languages), None)
+        lang_from_request = get_language_from_request(request)
+        if lang_from_request and lang_from_request in supported_languages:
+            return lang_from_request
 
-        if lang in supported_languages:
-            return lang
+        default_lang = Locale.get_default().language_code
+        return default_lang
 
-        return Locale.get_default().language_code
 
-    def get_queryset(self):
-        lang = self.get_locale_language(self.request)
-        current_locale = Locale.objects.get(language_code=lang)
-        return super().get_queryset().filter(locale=current_locale)
 
     def detail_view(self, request, pk, *args, **kwargs):
-        lang = self.get_locale_language(request)
-        locale_param = request.GET.get('locale')
         supported_languages = set(Locale.objects.values_list('language_code', flat=True))
+        locale_param = request.GET.get('locale')
 
-        if locale_param and locale_param in supported_languages:
+        try:
+            page = Page.objects.live().get(id=pk)
+            lang = page.locale.language_code
+            activate(lang)
+
+        except Page.DoesNotExist:
+            return Response({"error": f"La página con ID {pk} no existe."}, status=404)
+
+        if locale_param and locale_param in supported_languages and locale_param != lang:
             try:
-                page = Page.objects.live().get(id=pk)
                 target_locale = Locale.objects.get(language_code=locale_param)
-                translated_page = page.get_translation(target_locale)
-                if translated_page:
-                    new_path = request.path.replace(str(pk), str(translated_page.id))
-                    new_url = request.build_absolute_uri(new_path)
-                    query_dict = request.GET.copy()
-                    query_dict.pop('locale')
-                    if query_dict:
-                        new_url += f"?{'&'.join(f'{k}={v}' for k, v in query_dict.items())}"
-                    return redirect(new_url)
-            except (Page.DoesNotExist, Locale.DoesNotExist):
-                pass
+            except Locale.DoesNotExist:
+                return Response({"error": f"Locale '{locale_param}' no encontrado."}, status=404)
 
+            try:
+                translated_page = page.get_translation(target_locale)
+            except Exception as e:
+                return Response({"error": f"Error al obtener la traducción: {e}"}, status=500)
+
+            if translated_page:
+                new_url = request.build_absolute_uri(translated_page.get_url(request))
+                return redirect(new_url)
+            else:
+                return Response({"error": "No se encontró traducción para esta página."})
         return super().detail_view(request, pk, *args, **kwargs)
+            
 
     def listing_view(self, request, *args, **kwargs):
         lang = self.get_locale_language(request)
@@ -96,8 +103,8 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
         menu_items = []
         if root_page:
             root_item = {
-                'title': 'Inicio',
-                'url': '/',
+                'title': root_page.get_translation_or_none(current_locale).title if root_page.get_translation_or_none(current_locale) else 'Inicio',
+                'url': root_page.get_translation_or_none(current_locale).url if root_page.get_translation_or_none(current_locale) else '/',
                 'children': []
             }
             for page in root_page.get_children().live().in_menu():
@@ -105,7 +112,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
             menu_items.append(root_item)
 
         locales = Locale.objects.all()
-        aviailable_languages = [
+        available_languages = [
         {
             "code": locale.language_code,
             "display_name": locale.get_display_name()
@@ -119,7 +126,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
             'logo': branding.logo.file.url if branding and branding.logo else None,
             'favicon': branding.favicon.file.url if branding and branding.favicon else None,
             'current_language': lang,
-            'available_languages': aviailable_languages
+            'available_languages': available_languages
         })
         return response
 

@@ -1,14 +1,48 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags %}
+
 {% block title %}Noticias - {{ page.title }}{% endblock %}
 
 {% block content %}
 <h2>{{ page.title }}</h2>
 
-{% for bloque in page.body %}
-{% include_block bloque %}
-{% empty %}
-<p>No hay contenido disponible.</p>
-{% endfor %}
+<form method="get">
+    <select name="categoria" onchange="this.form.submit()">
+        <option value="">Todas las categorías</option>
+        {% for cat in categorias %}
+        {% if cat.slug == current_categoria %}
+        <option value="{{ cat.slug }}" selected>{{ cat.nombre }}</option>
+        {% else %}
+        <option value="{{ cat.slug }}">{{ cat.nombre }}</option>
+        {% endif %}
+        {% endfor %}
+    </select>
 
+    <select name="tag" onchange="this.form.submit()">
+        <option value="">Todas las etiquetas</option>
+        {% for t in tags %}
+        {% if t.slug == current_tag %}
+        <option value="{{ t.slug }}" selected>{{ t.name }}</option>
+        {% else %}
+        <option value="{{ t.slug }}">{{ t.name }}</option>
+        {% endif %}
+        {% endfor %}
+    </select>
+</form>
+
+<hr>
+
+{% if noticias %}
+{% for noticia in noticias %}
+<article>
+    <h3><a href="{{ noticia.url }}">{{ noticia.title }}</a></h3>
+    <p><small>{{ noticia.fecha }}</small></p>
+    {% if noticia.categoria %}
+    <p><strong>Categoría:</strong> {{ noticia.categoria.nombre }}</p>
+    {% endif %}
+</article>
+{% endfor %}
+{% else %}
+<p>No hay noticias disponibles.</p>
+{% endif %}
 {% endblock %}

@@ -1,8 +1,9 @@
 {% load wagtailimages_tags %}
+
 <div class="gallery">
-    {% for item in self.images %}
+    {% for item in value.images %}
     <figure>
-        {% image self.imagen fill-800x450-c100 class="img-fluid rounded shadow" %}
+        {% image item.image fill-800x450-c100 class="img-fluid rounded shadow" %}
         {% if item.caption %}
         <figcaption>{{ item.caption }}</figcaption>
         {% endif %}

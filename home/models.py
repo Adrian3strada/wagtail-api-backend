@@ -20,6 +20,9 @@ from wagtail.images.models import Image
 from wagtail.snippets.models import register_snippet
 from wagtail_localize.models import TranslatableMixin
 from ckeditor.widgets import CKEditorWidget
+from modelcluster.fields import ParentalKey
+from modelcluster.tags import ClusterTaggableManager
+from taggit.models import TaggedItemBase
 
 
 @register_snippet
@@ -90,6 +93,16 @@ class CategoriaNoticia(models.Model):
 
     def __str__(self):
         return self.nombre
+
+#etiquetas
+class NoticiaPageTag(TaggedItemBase):
+    content_object = ParentalKey(
+        'NoticiaPage',
+        related_name='tagged_items',
+        on_delete=models.CASCADE,
+    )
+
+
 
 # apis para imagen
 
@@ -540,6 +553,7 @@ class GalleryImageBlock(blocks.StructBlock):
             }
         }
 
+
 class GalleryBlock(blocks.StructBlock):
     images = blocks.ListBlock(GalleryImageBlock(), label="Imágenes")
 
@@ -863,7 +877,7 @@ common_streamfield = [
     ('eventos_grid', EventosGridBlock()),
     ('tarjeta_noticia', TarjetaNoticiaBlock()),
     ('grupo_de_noticias', GrupoDeNoticiasBlock()),
-    
+    ('gallery_image', GalleryImageBlock()),
     ('modulos_certiffy', ModulosCertiffyBlockNuevo()),
   
     
@@ -950,9 +964,31 @@ class HomePage(BaseContentPage):
 
     
 
-class NoticiasIndexPage(BaseContentPage):
+class NoticiasIndexPage(Page):
+
     subpage_types = ['home.NoticiaPage']
-    parent_page_types = ['home.HomePage']
+
+    def get_context(self, request):
+        context = super().get_context(request)
+
+        noticias = NoticiaPage.objects.live().descendant_of(self)
+
+        categoria = request.GET.get('categoria')
+        tag = request.GET.get('tag')
+
+        if categoria:
+            noticias = noticias.filter(categoria__slug=categoria)
+
+        if tag:
+            noticias = noticias.filter(tags__slug=tag)
+
+        context['noticias'] = noticias
+        context['categorias'] = CategoriaNoticia.objects.all()
+        context['tags'] = NoticiaPage.tags.model.objects.all()
+        context['current_categoria'] = categoria
+        context['current_tag'] = tag
+
+        return context  
 
 class NoticiaPage(BaseContentPage):
     fecha = models.DateField("Fecha de Publicación", auto_now_add=True, editable=False) 
@@ -963,14 +999,17 @@ class NoticiaPage(BaseContentPage):
         on_delete=models.SET_NULL,
         related_name='noticias'
     )
+    tags = ClusterTaggableManager(through=NoticiaPageTag, blank=True)
 
     content_panels = BaseContentPage.content_panels + [
         FieldPanel('categoria'),
+        FieldPanel('tags'),
     ]
 
     api_fields = BaseContentPage.api_fields + [
         APIField("fecha"),
-        APIField("categoria"),  
+        APIField("categoria"),
+        APIField("tags"),
     ]
 
     subpage_types = []
