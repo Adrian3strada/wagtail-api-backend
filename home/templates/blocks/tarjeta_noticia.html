@@ -1,9 +1,5 @@
 {% load wagtailcore_tags wagtailimages_tags tz %}
-{% if self.titulo_apartado %}
-<div class="container mb-4">
-    <h2 class="fw-bold text-center">{{ self.titulo_apartado }}</h2>
-</div>
-{% endif %}
+
 <a href="{{ self.url }}" class="text-decoration-none text-reset d-block h-100">
     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-transform hover-shadow">
 
@@ -13,7 +9,7 @@
 
         <div class="card-body p-4 d-flex flex-column">
             <p class="mb-2 text-uppercase small text-muted fw-semibold">
-                {% now "d M Y" %}
+                {% if self.fecha %}{{ self.fecha|date:"d M Y" }}{% endif %}
                 {% if self.categoria %} · {{ self.categoria.nombre }}{% endif %}
             </p>
             <h5 class="card-title fw-bold mb-2">{{ self.title }}</h5>

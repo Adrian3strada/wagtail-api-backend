@@ -23,6 +23,7 @@ from ckeditor.widgets import CKEditorWidget
 from modelcluster.fields import ParentalKey
 from modelcluster.tags import ClusterTaggableManager
 from taggit.models import TaggedItemBase
+from taggit.models import Tag
 
 
 
@@ -395,12 +396,12 @@ class CarouselImageBlock(blocks.StructBlock):
 class CarouselBlock(blocks.StructBlock):
     images = blocks.ListBlock(CarouselImageBlock(), label="Imágenes")
     
-    # Video de muestra (teaser)
+ 
     teaser_video_url = blocks.URLBlock(
         required=False, label="Video de muestra (URL de YouTube o Vimeo)"
     )
     
-    # Video principal (se abre al darle clic al teaser)
+
     main_video_url = blocks.URLBlock(
         required=False, label="Video principal (URL de YouTube o Vimeo)"
     )
@@ -764,6 +765,13 @@ class TarjetaNoticiaBlock(blocks.StructBlock):
     categoria = SnippetChooserBlock(target_model="home.CategoriaNoticia", label="Categoría")
     descripcion = blocks.RichTextBlock(label="Descripción")
     url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
+    fecha = blocks.DateBlock(required=False, label="Fecha de publicación")
+
+    def clean(self, value):
+        cleaned = super().clean(value)
+        if not cleaned.get("fecha"):
+            cleaned["fecha"] = datetime.date.today()
+        return cleaned
 
     class Meta:
         icon = "doc-full"
@@ -780,7 +788,8 @@ class GrupoDeNoticiasBlock(blocks.StructBlock):
             "titulo_apartado": value.get("titulo_apartado"),
             "noticias": [
                 {
-                    "fecha": datetime.date.today().strftime("%Y-%m-%d"),  # Se agrega automáticamente
+                   
+                    "fecha": item.get("fecha").strftime("%Y-%m-%d") if item.get("fecha") else None,
                     "categoria": item["categoria"].nombre if item.get("categoria") else None,
                     "descripcion": item["descripcion"].source,
                     "url": item.get("url"),
@@ -796,7 +805,6 @@ class GrupoDeNoticiasBlock(blocks.StructBlock):
         icon = "list-ul"
         label = "Sección de Noticias"
         template = "blocks/grupo_de_noticias.html"
-
 
 class ModuloBlock(blocks.StructBlock):
     imagen = ImageChooserBlock(required=True, label="Imagen del módulo")
@@ -843,6 +851,32 @@ class ModulosCertiffyBlockNuevo(blocks.StructBlock):
         label = "Bloque de módulos Certiffy"
         template = "blocks/modulos_certiffy.html"
 
+
+
+class ParrafoConAlineacionBlock(blocks.StructBlock):
+    alineacion = blocks.ChoiceBlock(
+        choices=[
+            ('left', 'Izquierda'),
+            ('center', 'Centrado'),
+            ('right', 'Derecha'),
+            ('justify', 'Justificado'), 
+        ],
+        default='left',
+        label='Alineación del texto'
+    )
+    texto = blocks.RichTextBlock(label="Texto enriquecido")
+
+    def get_api_representation(self, value, context=None, **kwargs):
+        return {
+            'alineacion': value['alineacion'],
+            'texto': value['texto'].source,  
+        }
+
+    class Meta:
+        icon = 'doc-full'
+        label = 'Párrafo con alineación'
+
+
 # bloques reutilizables
 
 common_streamfield = [
@@ -880,7 +914,7 @@ common_streamfield = [
     ('grupo_de_noticias', GrupoDeNoticiasBlock()),
     ('gallery_image', GalleryImageBlock()),
     ('modulos_certiffy', ModulosCertiffyBlockNuevo()),
-  
+    ('parrafo_con_alineacion', ParrafoConAlineacionBlock()),
     
 
 ]
@@ -965,7 +999,6 @@ class HomePage(BaseContentPage):
 
     
 
-from taggit.models import Tag
 
 
 class NoticiasIndexPage(BaseContentPage):
@@ -974,6 +1007,7 @@ class NoticiasIndexPage(BaseContentPage):
 
     def get_context(self, request):
         context = super().get_context(request)
+        
 
         noticias = NoticiaPage.objects.live().descendant_of(self)
 

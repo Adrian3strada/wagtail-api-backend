@@ -18,4 +18,4 @@ class NavbarAPIView(APIView):
         menu = [build_menu_tree(page) for page in first_level_pages]
 
         return Response(menu)
-    
+

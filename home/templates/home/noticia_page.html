@@ -18,8 +18,9 @@
 
     {% if page.tags.all %}
     <p class="etiquetas"><strong>Etiquetas:</strong>
-        {% for tag in page.tags.all %}
-        <a href="?tag={{ tag.slug }}" class="tag">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+        {% for tag in page.tags.all %}<a href="?categoria={{ current_categoria }}&tag={{ tag.slug }}"
+            class="tag">{{tag.name }}</a>
+
         {% endfor %}
     </p>
     {% endif %}
