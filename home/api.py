@@ -12,23 +12,23 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
     def get_locale_language(self, request):
         supported_languages = set(Locale.objects.values_list('language_code', flat=True))
 
-        # 1. Revisar parámetro locale en la query string
+        #locale
         locale_param = request.GET.get('locale')
         if locale_param in supported_languages:
             return locale_param
 
-        # 2. Intentar extraer el idioma desde la URL
+        #idioma
         path_parts = request.path.strip("/").split("/")
         lang_from_url = next((part for part in path_parts if part in supported_languages), None)
         if lang_from_url:
             return lang_from_url
 
-        # 3. Obtener idioma desde headers del request
+       
         lang_from_request = get_language_from_request(request)
         if lang_from_request in supported_languages:
             return lang_from_request
 
-        # 4. Por defecto, idioma configurado en Locale
+    #idioma por defecto
         return Locale.get_default().language_code
 
     def detail_view(self, request, pk, *args, **kwargs):
@@ -41,7 +41,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
         except Page.DoesNotExist:
             return Response({"error": f"La página con ID {pk} no existe."}, status=404)
 
-        # Si el locale solicitado es distinto al de la página, intentar redirigir a traducción
+        
         if locale_param in supported_languages and locale_param != page.locale.language_code:
             try:
                 target_locale = Locale.objects.get(language_code=locale_param)
@@ -56,7 +56,6 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
             else:
                 return Response({"error": "No se encontró traducción para esta página."})
 
-        # Si no, se muestra la vista original
         return super().detail_view(request, pk, *args, **kwargs)
 
     def listing_view(self, request, *args, **kwargs):
@@ -64,7 +63,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
         lang = self.get_locale_language(request)
         locale_param = request.GET.get('locale')
 
-        # Si el locale en query es diferente del calculado, eliminarlo y redirigir
+     
         if locale_param in supported_languages and locale_param != lang:
             query_dict = request.GET.copy()
             query_dict.pop('locale')
@@ -77,8 +76,8 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
 
         page_type = request.GET.get("type")
 
-        # Filtrado especial para NoticiaPage
-        if page_type == "home.NoticiaPage":
+        # filtrado de noticias x categoria y tag
+        if page_type == "home.NoticiasIndexPage":
             categoria_slug = request.GET.get("categoria")
             tag_slug = request.GET.get("tag")
 
@@ -110,7 +109,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
                 "current_tag": tag_slug,
             })
 
-        # Si no es NoticiaPage, construimos el menú principal
+        
         site = Site.find_for_request(request)
         root_page = site.root_page if site else None
 
@@ -147,10 +146,10 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
 
         branding = SiteBranding.for_request(request)
         
-        # Obtener la respuesta base (heredada)
+        
         response = super().listing_view(request, *args, **kwargs)
         
-        # Agregar datos extra
+       
         response.data.update({
             'navbar': menu_items,
             'logo': branding.logo.file.url if branding and branding.logo else None,
