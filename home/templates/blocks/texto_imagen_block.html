@@ -10,9 +10,8 @@
     {% if self.posicion_imagen == "fondo" or self.posicion_imagen == "herobanner" %}
     {% if self.imagen %}
     <div class="bloque-fondo" style="background-image: url('{{ self.imagen.url }}');">
-
-        <div class="bloque-texto fondo-texto">
-            {{ self.texto|richtext }}
+        <div class="bloque-texto fondo-texto" style="text-align: {{ self.texto.alineacion }};">
+            {{ self.texto.texto|richtext }}
         </div>
     </div>
     {% endif %}
@@ -25,8 +24,8 @@
         </div>
         {% endif %}
 
-        <div class="bloque-texto">
-            {{ self.texto|richtext }}
+        <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+            {{ self.texto.texto|richtext }}
         </div>
 
         {% if self.posicion_imagen == "derecha" and self.imagen %}
@@ -37,8 +36,8 @@
     </div>
 
     {% elif self.posicion_imagen == "abajo" %}
-    <div class="bloque-texto">
-        {{ self.texto|richtext }}
+    <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+        {{ self.texto.texto|richtext }}
     </div>
     {% if self.imagen %}
     <div class="bloque-imagen">
@@ -47,8 +46,8 @@
     {% endif %}
 
     {% elif self.posicion_imagen == "galeria" %}
-    <div class="bloque-texto">
-        {{ self.texto|richtext }}
+    <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+        {{ self.texto.texto|richtext }}
     </div>
     {% if self.galeria %}
     <div class="bloque-galeria">
@@ -61,3 +60,35 @@
     {% endif %}
     {% endif %}
 </div>
+
+<style>
+    .bloque-imagen-texto {
+        margin-bottom: 2rem;
+    }
+
+    .bloque-titulo {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .flex-layout {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .bloque-texto {
+        flex: 1;
+    }
+
+    .bloque-imagen img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .bloque-galeria {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+</style>

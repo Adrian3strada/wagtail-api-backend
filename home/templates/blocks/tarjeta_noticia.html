@@ -12,7 +12,11 @@
                 {% if self.fecha %}{{ self.fecha|date:"d M Y" }}{% endif %}
                 {% if self.categoria %} · {{ self.categoria.nombre }}{% endif %}
             </p>
-            <h5 class="card-title fw-bold mb-2">{{ self.title }}</h5>
+
+            {% if self.titulo %}
+            <h5 class="card-title fw-bold mb-2">{{ self.titulo }}</h5>
+            {% endif %}
+
             <div class="card-text text-secondary small mb-0 flex-grow-1">
                 {{ self.descripcion|richtext }}
             </div>

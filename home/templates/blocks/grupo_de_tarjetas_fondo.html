@@ -1,7 +1,7 @@
 {% load wagtailcore_tags wagtailimages_tags %}
 
 {% if self.titulo_apartado %}
-<div class="container mb-4">
+<div class="container mb-5">
     <h2 class="fw-bold text-center">{{ self.titulo_apartado }}</h2>
 </div>
 {% endif %}
@@ -10,20 +10,20 @@
     <div class="row g-4">
         {% for tarjeta in self.tarjetas %}
         <div class="col-md-6 col-lg-4">
-            <div class="event-card position-relative text-white rounded-4 overflow-hidden" style="height: 400px;">
+            <div class="event-card position-relative rounded-4 overflow-hidden text-white shadow-lg">
                 {% image tarjeta.imagen original as imagen %}
-                <div class="bg-image"
-                    style="background-image: url('{{ imagen.url }}'); height: 100%; background-size: cover; background-position: center;">
+                <div class="bg-image" style="background-image: url('{{ imagen.url }}');">
                 </div>
 
-
-
-                <div class="position-absolute bottom-0 p-3 bg-gradient w-100">
-                    <p class="mb-2 text-uppercase small text-muted fw-semibold">
-                        {% now "d M Y" %}
-                        {% if tarjeta.categoria %} · {{ tarjeta.categoria.nombre }}{% endif %}
-                    <h4 class="fw-bold mb-1">{{ tarjeta.titulo }}</h4>
-                    <p class="small mb-0">{{ tarjeta.descripcion }}</p>
+                <div class="overlay position-absolute bottom-0 w-100 p-4">
+                    <div class="mb-2 small text-light text-uppercase fw-semibold d-flex align-items-center">
+                        <span class="me-2">📅</span> {% now "d M Y" %}
+                        {% if tarjeta.categoria %}
+                        <span class="mx-2">·</span> {{ tarjeta.categoria.nombre }}
+                        {% endif %}
+                    </div>
+                    <h4 class="fw-bold mb-2">{{ tarjeta.titulo }}</h4>
+                    <p class="small text-light mb-0">{{ tarjeta.descripcion }}</p>
                 </div>
             </div>
         </div>
@@ -32,28 +32,39 @@
 </div>
 
 <style>
-    .bg-gradient {
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-    }
-
     .event-card {
-        transition: transform 0.3s ease-in-out;
+        height: 420px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 1rem;
     }
 
     .event-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
 
     .bg-image {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: brightness(0.75);
         z-index: 0;
+        transition: filter 0.3s ease;
     }
 
-    .event-card .position-absolute {
+    .event-card:hover .bg-image {
+        filter: brightness(0.6);
+    }
+
+    .overlay {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
         z-index: 1;
+    }
+
+    h4,
+    p {
+        z-index: 2;
+        position: relative;
     }
 </style>

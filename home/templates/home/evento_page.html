@@ -3,13 +3,72 @@
 {% block title %}{{ page.title }} - Eventos{% endblock %}
 
 {% block content %}
-<article>
-    <h2>{{ page.title }}</h2>
-    <p><small>Fecha y hora: {{ page.fecha|date:"d M Y H:i" }}</small></p>
-    <p><strong>Ubicación:</strong> {{ page.ubicacion }}</p>
+<section class="event-header py-5 text-white text-center bg-gradient-primary">
+    <div class="container">
+        <h1 class="display-4 fw-bold">{{ page.title }}</h1>
+    </div>
+</section>
 
-    {% for block in page.body %}
-    {{ block }}
-    {% endfor %}
-</article>
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Tarjeta del evento -->
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden mb-5">
+                <div class="card-body p-4">
+                    <div class="row gy-3">
+                        <div class="col-md-6 d-flex align-items-start">
+                            <span class="me-3 fs-3 text-primary">🗓</span>
+                            <div>
+                                <h6 class="mb-1 text-muted">Fecha y hora</h6>
+                                <p class="mb-0 fw-semibold">{{ page.fecha|date:"l, d M Y · H:i" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-start">
+                            <span class="me-3 fs-3 text-danger">📍</span>
+                            <div>
+                                <h6 class="mb-1 text-muted">Ubicación</h6>
+                                <p class="mb-0 fw-semibold">{{ page.ubicacion }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if page.mapa_url %}
+                <div class="ratio ratio-16x9">
+                    <iframe src="{{ page.mapa_url|safe }}" width="600" height="450" style="border:0;" allowfullscreen
+                        loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Cuerpo del evento -->
+            <div class="event-body px-1 px-md-2 px-lg-4">
+                {% for block in page.body %}
+                <div class="mb-4">
+                    {{ block }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .event-body p {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: #333;
+    }
+
+    .event-body h2,
+    .event-body h3 {
+        margin-top: 2rem;
+        font-weight: bold;
+        color: #2e7eed;
+    }
+
+    iframe {
+        border-radius: 0 0 1rem 1rem;
+    }
+</style>
 {% endblock %}

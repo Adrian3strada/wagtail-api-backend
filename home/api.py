@@ -1,209 +1,180 @@
 from wagtail.api.v2.views import PagesAPIViewSet, BaseAPIViewSet
 from wagtail.models import Site, Page, Locale
 from rest_framework.response import Response
-from home.models import SiteBranding 
-from django.utils.translation import get_language, activate, get_language_from_request
-from django.shortcuts import redirect
-from home.models import NoticiaPage, CategoriaNoticia, NoticiaPageTag
+from home.models import SiteBranding, NoticiaPage, CategoriaNoticia, NoticiaPageTag
 from taggit.models import Tag
+from django.utils.translation import activate, get_language_from_request
+from django.shortcuts import redirect
 
-#api entera y nabvar
+
+def get_supported_languages():
+    return set(Locale.objects.values_list('language_code', flat=True))
+
+
+def get_current_locale(lang_code):
+    return Locale.objects.get(language_code=lang_code)
+
+
+def build_menu_tree(page, current_locale):
+    translated = page.get_translation_or_none(current_locale) or page
+    return {
+        'title': translated.title,
+        'url': translated.url,
+        'children': [
+            {
+                'title': (child.get_translation_or_none(current_locale) or child).title,
+                'url': (child.get_translation_or_none(current_locale) or child).url,
+                'children': []
+            }
+            for child in page.get_children().live().in_menu()
+        ]
+    }
+
+
 class CustomPagesAPIViewSet(PagesAPIViewSet):
     def get_locale_language(self, request):
-        supported_languages = set(Locale.objects.values_list('language_code', flat=True))
-
-        #locale
+        supported = get_supported_languages()
         locale_param = request.GET.get('locale')
-        if locale_param in supported_languages:
+
+        if locale_param in supported:
             return locale_param
 
-        #idioma
-        path_parts = request.path.strip("/").split("/")
-        lang_from_url = next((part for part in path_parts if part in supported_languages), None)
+        lang_from_url = next((part for part in request.path.strip("/").split("/") if part in supported), None)
         if lang_from_url:
             return lang_from_url
 
-       
         lang_from_request = get_language_from_request(request)
-        if lang_from_request in supported_languages:
-            return lang_from_request
-
-    #idioma por defecto
-        return Locale.get_default().language_code
+        return lang_from_request if lang_from_request in supported else Locale.get_default().language_code
 
     def detail_view(self, request, pk, *args, **kwargs):
-        supported_languages = set(Locale.objects.values_list('language_code', flat=True))
-        locale_param = request.GET.get('locale')
-
         try:
             page = Page.objects.live().get(id=pk)
             activate(page.locale.language_code)
         except Page.DoesNotExist:
             return Response({"error": f"La página con ID {pk} no existe."}, status=404)
 
-        
-        if locale_param in supported_languages and locale_param != page.locale.language_code:
+        locale_param = request.GET.get('locale')
+        if locale_param and locale_param != page.locale.language_code:
             try:
-                target_locale = Locale.objects.get(language_code=locale_param)
+                target_locale = get_current_locale(locale_param)
                 translated_page = page.get_translation(target_locale)
+                if translated_page:
+                    return redirect(request.build_absolute_uri(translated_page.get_url(request)))
+                return Response({"error": "No se encontró traducción para esta página."})
             except Locale.DoesNotExist:
                 return Response({"error": f"Locale '{locale_param}' no encontrado."}, status=404)
             except Exception as e:
                 return Response({"error": f"Error al obtener la traducción: {e}"}, status=500)
 
-            if translated_page:
-                return redirect(request.build_absolute_uri(translated_page.get_url(request)))
-            else:
-                return Response({"error": "No se encontró traducción para esta página."})
-
         return super().detail_view(request, pk, *args, **kwargs)
 
     def listing_view(self, request, *args, **kwargs):
-        supported_languages = set(Locale.objects.values_list('language_code', flat=True))
         lang = self.get_locale_language(request)
-        locale_param = request.GET.get('locale')
-
-     
-        if locale_param in supported_languages and locale_param != lang:
-            query_dict = request.GET.copy()
-            query_dict.pop('locale')
-            base_url = request.build_absolute_uri(request.path)
-            query_string = f"?{'&'.join(f'{k}={v}' for k, v in query_dict.items())}" if query_dict else ""
-            return redirect(f"{base_url}{query_string}")
-
         activate(lang)
-        current_locale = Locale.objects.get(language_code=lang)
-
+        current_locale = get_current_locale(lang)
         page_type = request.GET.get("type")
 
-        # filtrado de noticias x categoria y tag
         if page_type == "home.NoticiasIndexPage":
             categoria_slug = request.GET.get("categoria")
             tag_slug = request.GET.get("tag")
-
-            noticias_queryset = NoticiaPage.objects.live().filter(locale=current_locale)
+            noticias = NoticiaPage.objects.live().filter(locale=current_locale)
 
             if categoria_slug:
-                noticias_queryset = noticias_queryset.filter(categoria__slug=categoria_slug)
-
+                noticias = noticias.filter(categoria__slug=categoria_slug)
             if tag_slug:
-                noticias_queryset = noticias_queryset.filter(tags__slug=tag_slug)
+                noticias = noticias.filter(tags__slug=tag_slug)
 
-            paginated_queryset = self.paginate_queryset(noticias_queryset)
-            serializer = self.get_serializer_class()(paginated_queryset, many=True, context=self.get_serializer_context())
+            paginated = self.paginate_queryset(noticias)
+            serialized = self.get_serializer_class()(paginated, many=True, context=self.get_serializer_context())
 
-            categorias = CategoriaNoticia.objects.all()
-            categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in categorias]
+            categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaNoticia.objects.all()]
+            tag_ids = NoticiaPageTag.objects.filter(content_object_id__in=noticias.values_list("id", flat=True)).values_list("tag_id", flat=True)
+            tags_data = [{"slug": t.slug, "name": t.name} for t in Tag.objects.filter(id__in=tag_ids).distinct()]
 
-            tag_ids = NoticiaPageTag.objects.filter(
-                content_object_id__in=noticias_queryset.values_list("id", flat=True)
-            ).values_list("tag_id", flat=True)
-            tags = Tag.objects.filter(id__in=tag_ids).distinct()
-            tags_data = [{"slug": t.slug, "name": t.name} for t in tags]
+            response = self.get_paginated_response(serialized.data)
+            response.data.update({
+                'categorias': categorias_data,
+                'tags': tags_data,
+                'current_categoria': categoria_slug,
+                'current_tag': tag_slug
+            })
+            return response
 
-            return self.get_paginated_response({
-                "items": serializer.data,
-                "categorias": categorias_data,
-                "tags": tags_data,
-                "current_categoria": categoria_slug,
-                "current_tag": tag_slug,
+        # navbar
+        site = Site.find_for_request(request)
+        root = site.root_page if site else None
+        menu_items = []
+
+        if root:
+            translated_root = root.get_translation_or_none(current_locale)
+            menu_items.append({
+                'title': translated_root.title if translated_root else 'Inicio',
+                'url': translated_root.url if translated_root else '/',
+                'children': [build_menu_tree(child, current_locale) for child in root.get_children().live().in_menu()]
             })
 
-        
-        site = Site.find_for_request(request)
-        root_page = site.root_page if site else None
-
-        def build_menu_tree(page):
-            translated = page.get_translation_or_none(current_locale) or page
-            children = page.get_children().live().in_menu()
-            return {
-                'title': translated.title,
-                'url': translated.url,
-                'children': [
-                    {
-                        'title': child.get_translation_or_none(current_locale).title if child.get_translation_or_none(current_locale) else child.title,
-                        'url': child.get_translation_or_none(current_locale).url if child.get_translation_or_none(current_locale) else child.url,
-                        'children': []
-                    }
-                    for child in children
-                ]
-            }
-
-        menu_items = []
-        if root_page:
-            root_translated = root_page.get_translation_or_none(current_locale)
-            root_item = {
-                'title': root_translated.title if root_translated else 'Inicio',
-                'url': root_translated.url if root_translated else '/',
-                'children': [build_menu_tree(page) for page in root_page.get_children().live().in_menu()]
-            }
-            menu_items.append(root_item)
-
-        available_languages = [
-            {"code": locale.language_code, "display_name": locale.get_display_name()}
-            for locale in Locale.objects.all()
-        ]
-
-        branding = SiteBranding.for_request(request)
-        
-        
         response = super().listing_view(request, *args, **kwargs)
-        
-       
-        response.data.update({
-            'navbar': menu_items,
-            'logo': branding.logo.file.url if branding and branding.logo else None,
-            'favicon': branding.favicon.file.url if branding and branding.favicon else None,
-            'current_language': lang,
-            'available_languages': available_languages
-        })
-
         return response
 
 
-class FooterAPIViewSet(PagesAPIViewSet):
+class LocalesAPIViewSet(BaseAPIViewSet):
+    model = Locale
+
     def listing_view(self, request, *args, **kwargs):
-        locale_param = request.GET.get('locale')
-        if locale_param and Locale.objects.filter(language_code=locale_param).exists():
-            current_language = locale_param
-        else:
-            current_language = get_language()
+        return Response([
+            {"code": locale.language_code, "display_name": locale.get_display_name()}
+            for locale in Locale.objects.all()
+        ])
 
-        activate(current_language)
 
-        try:
-            current_locale = Locale.objects.get(language_code=current_language)
-        except Locale.DoesNotExist:
-            current_locale = Locale.get_default()
-            current_language = current_locale.language_code
-
+class NavbarAPIViewSet(BaseAPIViewSet):
+    def listing_view(self, request, *args, **kwargs):
+        lang = CustomPagesAPIViewSet().get_locale_language(request)
+        activate(lang)
+        current_locale = get_current_locale(lang)
         site = Site.find_for_request(request)
-        root_page = site.root_page if site else None
+        root = site.root_page if site else None
+        menu_items = []
 
-        def get_translated_url(page):
-            if page.url.startswith(f'/{current_language}/') or page.url == f'/{current_language}':
-                return page.url
-            elif page.url == '/':
-                return f'/{current_language}/'
-            else:
-                return f'/{current_language}{page.url}'
-
-        footer_items = []
-
-        if root_page:
-            translated_root = root_page.get_translation_or_none(current_locale) or root_page
-            footer_items.append({
-                'id': translated_root.id,
-                'title': translated_root.title,
-                'url': get_translated_url(translated_root)
+        if root:
+            translated_root = root.get_translation_or_none(current_locale)
+            menu_items.append({
+                'title': translated_root.title if translated_root else 'Inicio',
+                'url': translated_root.url if translated_root else '/',
+                'children': [build_menu_tree(child, current_locale) for child in root.get_children().live().in_menu()]
             })
 
-            for child in root_page.get_children().live().in_menu():
+        branding = SiteBranding.for_request(request)
+
+        return Response({
+            'navbar': menu_items,
+            'logo': branding.logo.file.url if branding and branding.logo else None,
+            'favicon': branding.favicon.file.url if branding and branding.favicon else None,
+            'current_language': lang
+        })
+
+
+class FooterAPIViewSet(PagesAPIViewSet):
+    model = Page
+
+    def listing_view(self, request, *args, **kwargs):
+        lang = request.GET.get('locale') or Locale.get_default().language_code
+        activate(lang)
+        current_locale = get_current_locale(lang)
+        site = Site.find_for_request(request)
+        root = site.root_page if site else None
+        footer_items = []
+
+        if root:
+            translated_root = root.get_translation_or_none(current_locale) or root
+            footer_items.append({'id': translated_root.id, 'title': translated_root.title, 'url': translated_root.url})
+
+            for child in root.get_children().live().in_menu():
                 translated_child = child.get_translation_or_none(current_locale) or child
                 footer_items.append({
                     'id': translated_child.id,
                     'title': translated_child.title,
-                    'url': get_translated_url(translated_child)
+                    'url': translated_child.url
                 })
 
         branding = SiteBranding.for_request(request)
@@ -212,21 +183,46 @@ class FooterAPIViewSet(PagesAPIViewSet):
             'items': footer_items,
             'logo': branding.logo.file.url if branding and branding.logo else None,
             'favicon': branding.favicon.file.url if branding and branding.favicon else None,
-            'current_language': current_language
+            'current_language': lang
         })
 
 
-class LocalesAPIViewSet(BaseAPIViewSet):
-    model = Locale
-
+class NoticiasAPIViewSet(BaseAPIViewSet):
     def listing_view(self, request, *args, **kwargs):
-        locales = Locale.objects.all()
-        data = [
-            {
-                "code": locale.language_code,
-                "display_name": locale.get_display_name()
-            }
-            for locale in locales
-        ]
-        return Response(data)
+        lang = CustomPagesAPIViewSet().get_locale_language(request)
+        activate(lang)
+        current_locale = get_current_locale(lang)
+
+        categoria_slug = request.GET.get("categoria")
+        tag_slug = request.GET.get("tag")
+
+        noticias = NoticiaPage.objects.live().filter(locale=current_locale)
+        if categoria_slug:
+            noticias = noticias.filter(categoria__slug=categoria_slug)
+        if tag_slug:
+            noticias = noticias.filter(tags__slug=tag_slug)
+
+        noticias_data = [{
+            'id': n.id,
+            'title': n.title,
+            'url': n.url,
+            'categoria': n.categoria.nombre if n.categoria else None,
+            'tags': [tag.name for tag in n.tags.all()],
+            'date': n.first_published_at,
+        } for n in noticias]
+
+        categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaNoticia.objects.all()]
+        tag_ids = NoticiaPageTag.objects.filter(
+            content_object_id__in=noticias.values_list("id", flat=True)
+        ).values_list("tag_id", flat=True)
+        tags_data = [{"slug": t.slug, "name": t.name} for t in Tag.objects.filter(id__in=tag_ids).distinct()]
+
+        return Response({
+            "noticias": noticias_data,
+            "categorias": categorias_data,
+            "tags": tags_data,
+            "current_categoria": categoria_slug,
+            "current_tag": tag_slug
+        })
+
 

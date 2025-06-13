@@ -497,10 +497,33 @@ class PlataformBlock(blocks.StructBlock):
                 for boton in value.get('botones', [])
             ],
         }
-        
+    
+class ParrafoConAlineacionBlock(blocks.StructBlock):
+    alineacion = blocks.ChoiceBlock(
+        choices=[
+            ('left', 'Izquierda'),
+            ('center', 'Centrado'),
+            ('right', 'Derecha'),
+            ('justify', 'Justificado'), 
+        ],
+        default='left',
+        label='Alineación del texto'
+    )
+    texto = blocks.RichTextBlock(label="Texto enriquecido")
+
+    def get_api_representation(self, value, context=None, **kwargs):
+        return {
+            'alineacion': value['alineacion'],
+            'texto': value['texto'].source,  
+        }
+
+    class Meta:
+        icon = 'doc-full'
+        label = 'Párrafo con alineación'
+
 class ImagenConTextoBlock(blocks.StructBlock):
     titulo = RichTextBlock(required=False)
-    texto = RichTextBlock()
+    texto = ParrafoConAlineacionBlock()  
     posicion_imagen = ChoiceBlock(choices=[
         ('fondo', 'Fondo'),
         ('izquierda', 'Izquierda'),
@@ -514,10 +537,14 @@ class ImagenConTextoBlock(blocks.StructBlock):
     def get_api_representation(self, value, context=None):
         imagen = value.get("imagen")
         galeria = value.get("galeria", [])
-        
+        texto_struct = value.get("texto")
+        alineacion = texto_struct.get("alineacion")
+        texto_html = str(texto_struct.get("texto"))
+
         return {
             "titulo": str(value.get("titulo")) if value.get("titulo") else "",
-            "texto": str(value.get("texto")) if value.get("texto") else "",
+            "texto": texto_html,
+            "alineacion_texto": alineacion,
             "posicion_imagen": value.get("posicion_imagen"),
             "imagen": {
                 "id": imagen.id,
@@ -761,6 +788,7 @@ class EventosGridBlock(blocks.StructBlock):
 
 
 class TarjetaNoticiaBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=False, label="Título (Si es evento)")
     imagen = ImageChooserBlock(label="Imagen")
     categoria = SnippetChooserBlock(target_model="home.CategoriaNoticia", label="Categoría")
     descripcion = blocks.RichTextBlock(label="Descripción")
@@ -853,28 +881,7 @@ class ModulosCertiffyBlockNuevo(blocks.StructBlock):
 
 
 
-class ParrafoConAlineacionBlock(blocks.StructBlock):
-    alineacion = blocks.ChoiceBlock(
-        choices=[
-            ('left', 'Izquierda'),
-            ('center', 'Centrado'),
-            ('right', 'Derecha'),
-            ('justify', 'Justificado'), 
-        ],
-        default='left',
-        label='Alineación del texto'
-    )
-    texto = blocks.RichTextBlock(label="Texto enriquecido")
 
-    def get_api_representation(self, value, context=None, **kwargs):
-        return {
-            'alineacion': value['alineacion'],
-            'texto': value['texto'].source,  
-        }
-
-    class Meta:
-        icon = 'doc-full'
-        label = 'Párrafo con alineación'
 
 
 # bloques reutilizables
@@ -1068,15 +1075,19 @@ class EventosIndexPage(BaseContentPage):
 class EventoPage(BaseContentPage):
     fecha = models.DateTimeField("Fecha del Evento")
     ubicacion = models.CharField("Ubicación", max_length=255)
+    mapa_url = models.TextField("URL del Mapa", blank=True, help_text="Enlace a Google Maps u otro servicio de mapas")
+
 
     content_panels = BaseContentPage.content_panels + [
         FieldPanel("fecha"),
         FieldPanel("ubicacion"),
+        FieldPanel("mapa_url"),
     ]
 
     api_fields = BaseContentPage.api_fields + [
         APIField("fecha"),
         APIField("ubicacion"),
+        APIField("mapa_url"),
     ]
 
     subpage_types = []

@@ -8,14 +8,8 @@
 <ul>
     {% for block in page.body %}
     {{ block }}
-    {% endfor %}
-    {% for evento in page.get_children.live %}
-    <li>
-        <a href="{{ evento.url }}">{{ evento.title }}</a> - {{ evento.specific.fecha|date:"d M Y H:i" }} en {{
-        evento.specific.ubicacion }}
-    </li>
-    {% empty %}
-    <li>No hay eventos programados.</li>
+
+
     {% endfor %}
 </ul>
 {% endblock %}
