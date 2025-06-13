@@ -1,7 +1,7 @@
 from wagtail.api.v2.views import PagesAPIViewSet, BaseAPIViewSet
 from wagtail.models import Site, Page, Locale
 from rest_framework.response import Response
-from home.models import SiteBranding, NoticiaPage, CategoriaNoticia, NoticiaPageTag
+from home.models import SiteBranding, NoticiaPage, CategoriaNoticia, NoticiaPageTag,EventoPage, CategoriaEvento, EventoPageTag
 from taggit.models import Tag
 from django.utils.translation import activate, get_language_from_request
 from django.shortcuts import redirect
@@ -226,3 +226,48 @@ class NoticiasAPIViewSet(BaseAPIViewSet):
         })
 
 
+class EventosAPIViewSet(BaseAPIViewSet):
+    def listing_view(self, request, *args, **kwargs):
+        # Obtener el idioma de la URL o parámetro ?locale=es
+        lang = CustomPagesAPIViewSet().get_locale_language(request)
+        activate(lang)
+        current_locale = get_current_locale(lang)
+
+        categoria_slug = request.GET.get("categoria")
+        tag_slug = request.GET.get("tag")
+
+        # Filtro base
+        eventos = EventoPage.objects.live().filter(locale=current_locale)
+
+        if categoria_slug:
+            eventos = eventos.filter(categoria__slug=categoria_slug)
+
+        if tag_slug:
+            eventos = eventos.filter(tags__slug=tag_slug)
+
+        eventos_data = [{
+            "id": e.id,
+            "title": e.title,
+            "url": e.url,
+            "fecha": e.fecha,
+            "ubicacion": e.ubicacion,
+            "mapa_url": e.mapa_url,
+            "categoria": e.categoria.nombre if e.categoria else None,
+            "tags": [tag.name for tag in e.tags.all()],
+        } for e in eventos]
+
+        categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaEvento.objects.all()]
+
+        tag_ids = EventoPageTag.objects.filter(
+            content_object_id__in=eventos.values_list("id", flat=True)
+        ).values_list("tag_id", flat=True)
+
+        tags_data = [{"slug": t.slug, "name": t.name} for t in Tag.objects.filter(id__in=tag_ids).distinct()]
+
+        return Response({
+            "eventos": eventos_data,
+            "categorias": categorias_data,
+            "tags": tags_data,
+            "current_categoria": categoria_slug,
+            "current_tag": tag_slug
+        })

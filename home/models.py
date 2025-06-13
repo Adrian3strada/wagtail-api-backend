@@ -104,6 +104,12 @@ class NoticiaPageTag(TaggedItemBase):
         on_delete=models.CASCADE,
     )
 
+class EventoPageTag(TaggedItemBase):
+    content_object = ParentalKey(
+        'home.EventoPage',  
+        related_name='tagged_items',
+        on_delete=models.CASCADE,
+    )
 
 
 # apis para imagen
@@ -788,12 +794,25 @@ class EventosGridBlock(blocks.StructBlock):
 
 
 class TarjetaNoticiaBlock(blocks.StructBlock):
-    titulo = blocks.CharBlock(required=False, label="Título (Si es evento)")
+    tipo = blocks.ChoiceBlock(
+        choices=[
+            ("noticia", "Noticia"),
+            ("evento", "Evento"),
+        ],
+        required=True,
+        label="Tipo de contenido"
+    )
+    titulo = blocks.CharBlock(required=False, label="Título (si aplica)")
     imagen = ImageChooserBlock(label="Imagen")
-    categoria = SnippetChooserBlock(target_model="home.CategoriaNoticia", label="Categoría")
+    categoria_noticia = SnippetChooserBlock(
+        target_model="home.CategoriaNoticia", required=False, label="Categoría (Noticia)"
+    )
+    categoria_evento = SnippetChooserBlock(
+        target_model="home.CategoriaEvento", required=False, label="Categoría (Evento)"
+    )
     descripcion = blocks.RichTextBlock(label="Descripción")
     url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
-    fecha = blocks.DateBlock(required=False, label="Fecha de publicación")
+    fecha = blocks.DateBlock(required=False, label="Fecha de publicación o evento")
 
     def clean(self, value):
         cleaned = super().clean(value)
@@ -803,30 +822,49 @@ class TarjetaNoticiaBlock(blocks.StructBlock):
 
     class Meta:
         icon = "doc-full"
-        label = "Noticia"
+        label = "Tarjeta (Noticia o Evento)"
         template = "blocks/tarjeta_noticia.html"
+
 
 class GrupoDeNoticiasBlock(blocks.StructBlock):
     titulo_apartado = blocks.CharBlock(required=True, label="Título del apartado de noticias") 
     noticias = blocks.ListBlock(TarjetaNoticiaBlock(), label="Lista de noticias")
 
     def get_api_representation(self, value, context=None):
+        noticias_list = []
+        for item in value.get("noticias", []):
+            tipo = item.get("tipo")
+
+            if tipo == "noticia":
+                categoria_obj = item.get("categoria_noticia")
+            elif tipo == "evento":
+                categoria_obj = item.get("categoria_evento")
+            else:
+                categoria_obj = None
+
+            # Obtener nombre de la categoría si existe
+            if categoria_obj and hasattr(categoria_obj, 'nombre'):
+                categoria_nombre = categoria_obj.nombre
+            else:
+                categoria_nombre = None
+
+            noticias_list.append({
+                "fecha": item.get("fecha").strftime("%Y-%m-%d") if item.get("fecha") else None,
+                "categoria": categoria_nombre,
+                "descripcion": item["descripcion"].source if hasattr(item["descripcion"], 'source') else item["descripcion"],
+                "url": item.get("url"),
+                "imagen": {
+                    "url": item["imagen"].get_rendition("fill-800x400-c100").url,
+                    "title": item["imagen"].title
+                } if item.get("imagen") else None,
+                "tipo": tipo,
+                "titulo": item.get("titulo"),
+            })
+
         return {
             "tipo": "grupo_de_noticias",
             "titulo_apartado": value.get("titulo_apartado"),
-            "noticias": [
-                {
-                   
-                    "fecha": item.get("fecha").strftime("%Y-%m-%d") if item.get("fecha") else None,
-                    "categoria": item["categoria"].nombre if item.get("categoria") else None,
-                    "descripcion": item["descripcion"].source,
-                    "url": item.get("url"),
-                    "imagen": {
-                        "url": item["imagen"].get_rendition("fill-800x400-c100").url,
-                        "title": item["imagen"].title
-                    } if item.get("imagen") else None
-                } for item in value["noticias"]
-            ]
+            "noticias": noticias_list
         }
 
     class Meta:
@@ -1072,22 +1110,65 @@ class EventosIndexPage(BaseContentPage):
     subpage_types = ['home.EventoPage']
     parent_page_types = ['home.HomePage']
 
+    def get_context(self, request):
+        context = super().get_context(request)
+
+        eventos = EventoPage.objects.live().descendant_of(self)
+
+        categoria = request.GET.get('categoria')
+        tag = request.GET.get('tag')
+
+        if categoria:
+            eventos = eventos.filter(categoria__slug=categoria)
+
+        if tag:
+            eventos = eventos.filter(tags__slug=tag)
+
+        evento_ids = eventos.values_list('id', flat=True)
+
+        tag_ids = EventoPageTag.objects.filter(
+            content_object_id__in=evento_ids
+        ).values_list('tag_id', flat=True)
+
+        tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
+
+        context['eventos'] = eventos
+        context['categorias'] = CategoriaEvento.objects.all()
+        context['tags'] = tags_relacionados
+        context['current_categoria'] = categoria
+        context['current_tag'] = tag
+
+        return context
+
 class EventoPage(BaseContentPage):
     fecha = models.DateTimeField("Fecha del Evento")
     ubicacion = models.CharField("Ubicación", max_length=255)
     mapa_url = models.TextField("URL del Mapa", blank=True, help_text="Enlace a Google Maps u otro servicio de mapas")
 
+    categoria = models.ForeignKey(
+        'home.CategoriaEvento',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='eventos'
+    )
+
+    tags = ClusterTaggableManager(through='home.EventoPageTag', blank=True)
 
     content_panels = BaseContentPage.content_panels + [
         FieldPanel("fecha"),
         FieldPanel("ubicacion"),
         FieldPanel("mapa_url"),
+        FieldPanel("categoria"),
+        FieldPanel("tags"),
     ]
 
     api_fields = BaseContentPage.api_fields + [
         APIField("fecha"),
         APIField("ubicacion"),
         APIField("mapa_url"),
+        APIField("categoria"),
+        APIField("tags"),
     ]
 
     subpage_types = []

@@ -2,15 +2,17 @@
 
 <a href="{{ self.url }}" class="text-decoration-none text-reset d-block h-100">
     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-transform hover-shadow">
-
         <div class="ratio ratio-16x9">
             {% image self.imagen fill-800x400-c100 class="object-fit-cover" %}
         </div>
-
         <div class="card-body p-4 d-flex flex-column">
             <p class="mb-2 text-uppercase small text-muted fw-semibold">
                 {% if self.fecha %}{{ self.fecha|date:"d M Y" }}{% endif %}
-                {% if self.categoria %} · {{ self.categoria.nombre }}{% endif %}
+                {% if self.tipo == "noticia" and self.categoria_noticia %}
+                · {{ self.categoria_noticia.nombre }}
+                {% elif self.tipo == "evento" and self.categoria_evento %}
+                · {{ self.categoria_evento.nombre }}
+                {% endif %}
             </p>
 
             {% if self.titulo %}
@@ -23,6 +25,7 @@
         </div>
     </div>
 </a>
+
 
 <style>
     .hover-shadow:hover {
