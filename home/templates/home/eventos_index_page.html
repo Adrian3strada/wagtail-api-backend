@@ -1,15 +1,79 @@
 {% extends "base.html" %}
-
-{% block title %}Eventos - {{ page.title }}{% endblock %}
+{% load wagtailcore_tags %}
 
 {% block content %}
-<h2>{{ page.title }}</h2>
+<div class="container mt-5">
+    <h1 class="mb-4">Eventos</h1>
 
-<ul>
-    {% for block in page.body %}
-    {{ block }}
+    <!-- FILTROS -->
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{% pageurl page %}"
+            class="btn {% if not current_categoria and not current_tag %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Todos
+        </a>
 
+        {% for categoria in categorias %}
+        <a href="?categoria={{ categoria.slug }}"
+            class="btn {% if categoria.slug == current_categoria %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            {{ categoria.nombre }}
+        </a>
+        {% endfor %}
 
-    {% endfor %}
-</ul>
+        {% for tag in tags %}
+        <a href="?tag={{ tag.slug }}"
+            class="btn {% if tag.slug == current_tag %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            #{{ tag.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- LISTADO DE EVENTOS -->
+    <div class="row">
+        {% for evento in eventos %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ evento.title }}</h5>
+                    <p><strong>Ubicación:</strong> {{ evento.ubicacion }}</p>
+                    <p><strong>Fecha:</strong> {{ evento.fecha }}</p>
+                    <a href="{{ evento.url }}" class="btn btn-sm btn-outline-secondary">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No se encontraron eventos para los filtros seleccionados.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINACIÓN -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">Anterior</a>
+            </li>
+            {% endif %}
+
+            {% for i in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                <a class="page-link"
+                    href="?page={{ i }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">{{
+                    i }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
 {% endblock %}

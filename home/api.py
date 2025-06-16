@@ -5,7 +5,7 @@ from home.models import SiteBranding, NoticiaPage, CategoriaNoticia, NoticiaPage
 from taggit.models import Tag
 from django.utils.translation import activate, get_language_from_request
 from django.shortcuts import redirect
-
+from django.core.paginator import Paginator, EmptyPage
 
 def get_supported_languages():
     return set(Locale.objects.values_list('language_code', flat=True))
@@ -246,7 +246,6 @@ class NoticiasAPIViewSet(PagesAPIViewSet):
             }
         })
 
-from django.core.paginator import Paginator, EmptyPage
 
 class EventosAPIViewSet(PagesAPIViewSet):
     model = EventoPage

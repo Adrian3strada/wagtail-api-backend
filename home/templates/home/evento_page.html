@@ -49,6 +49,15 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Botón "Ver más eventos" -->
+            {% if eventos_index_url %}
+            <div class="text-center my-5">
+                <a href="{{ eventos_index_url }}" class="btn btn-outline-primary btn-lg">
+                    Ver más eventos{% if page.categoria %} de {{ page.categoria.nombre }}{% endif %}
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </section>

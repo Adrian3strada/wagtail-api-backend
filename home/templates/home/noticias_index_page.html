@@ -1,58 +1,72 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags %}
 
-{% block title %}Noticias - {{ page.title }}{% endblock %}
-
 {% block content %}
-<h2>{{ page.title }}</h2>
+<div class="container mt-5">
+    <h1 class="mb-4">Noticias</h1>
 
-<form method="get" class="mb-4">
+    <!-- FILTROS -->
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{% pageurl page %}" class="btn {% if not current_categoria and not current_tag %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Todas
+        </a>
+
+        {% for categoria in categorias %}
+            <a href="?categoria={{ categoria.slug }}" class="btn {% if categoria.slug == current_categoria %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ categoria.nombre }}
+            </a>
+        {% endfor %}
+
+        {% for tag in tags %}
+            <a href="?tag={{ tag.slug }}" class="btn {% if tag.slug == current_tag %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                #{{ tag.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- LISTADO DE NOTICIAS -->
     <div class="row">
-        <div class="col-md-6">
-            <select name="categoria" class="form-select" onchange="this.form.submit()">
-                <option value="">Todas las categorías</option>
-                {% for cat in categorias %}
-                <option value="{{ cat.slug }}" {% if cat.slug == current_categoria %}selected{% endif %}>{{ cat.nombre }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-6">
-            <select name="tag" class="form-select" onchange="this.form.submit()">
-                <option value="">Todas las etiquetas</option>
-                {% for t in tags %}
-                <option value="{{ t.slug }}" {% if t.slug == urrent_tag %}selected{% endif %}>{{ t.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>
-</form>
-
-<div class="row">
-    {% if noticias %}
-    {% for noticia in noticias %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100">
-            {% if noticia.imagen %}
-            <img src="{{ noticia.imagen.url }}" class="card-img-top" alt="{{ noticia.title }}">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title">{{ noticia.title }}</h5>
-                <p class="card-text">
-                    <small class="text-muted">{{ noticia.fecha }}</small><br>
-                    {% if noticia.categoria %}
-                    <strong>Categoría:</strong> {{ noticia.categoria.nombre }}
-                    {% endif %}
-                </p>
-                <a href="{{ noticia.url }}" class="btn btn-primary">Leer más</a>
+        {% for noticia in noticias %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ noticia.title }}</h5>
+                        <p class="card-text">{{ noticia.search_description|default:"Sin descripción" }}</p>
+                        <p class="text-muted small">{{ noticia.fecha }}</p>
+                        <a href="{{ noticia.url }}" class="btn btn-sm btn-outline-secondary">Leer más</a>
+                    </div>
+                </div>
             </div>
-        </div>
+        {% empty %}
+            <div class="col-12">
+                <p>No se encontraron noticias para los filtros seleccionados.</p>
+            </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-    {% else %}
-    <div class="col-12">
-        <p>No hay noticias disponibles.</p>
-    </div>
+
+    <!-- PAGINACIÓN -->
+    {% if page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                {% for i in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">Siguiente</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     {% endif %}
 </div>
 {% endblock %}

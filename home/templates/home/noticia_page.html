@@ -8,8 +8,6 @@
     <p class="categoria"><strong>Categoría:</strong> {{ page.categoria.nombre }}</p>
     {% endif %}
 
-
-
     <p><small>Publicado el {{ page.fecha }}</small></p>
 
     {% for block in page.body %}
@@ -18,11 +16,19 @@
 
     {% if page.tags.all %}
     <p class="etiquetas"><strong>Etiquetas:</strong>
-        {% for tag in page.tags.all %}<a href="?categoria={{ current_categoria }}&tag={{ tag.slug }}"
-            class="tag">{{tag.name }}</a>
-
+        {% for tag in page.tags.all %}
+        <a href="?tag={{ tag.slug }}" class="tag">{{ tag.name }}</a>
         {% endfor %}
     </p>
+    {% endif %}
+
+    <!-- BOTÓN "VER MÁS NOTICIAS" -->
+    {% if noticias_index_url %}
+    <div class="text-center my-5">
+        <a href="{{ noticias_index_url }}" class="btn btn-outline-primary">
+            Ver más noticias{% if page.categoria %} de {{ page.categoria.nombre }}{% endif %}
+        </a>
+    </div>
     {% endif %}
 </article>
 {% endblock %}

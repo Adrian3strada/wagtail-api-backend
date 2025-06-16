@@ -7,51 +7,64 @@
     <h2 class="bloque-titulo">{{ self.titulo|richtext }}</h2>
     {% endif %}
 
+    {# Fondo o Herobanner con imagen #}
     {% if self.posicion_imagen == "fondo" or self.posicion_imagen == "herobanner" %}
-    {% if self.imagen %}
-    <div class="bloque-fondo" style="background-image: url('{{ self.imagen.url }}');">
+    {% with imagen=self.imagenes.0 %}
+    {% if imagen %}
+    <div class="bloque-fondo" style="background-image: url('{{ imagen.url }}');">
         <div class="bloque-texto fondo-texto" style="text-align: {{ self.texto.alineacion }};">
             {{ self.texto.texto|richtext }}
         </div>
     </div>
     {% endif %}
+    {% endwith %}
 
+    {# Imagen a la izquierda o derecha #}
     {% elif self.posicion_imagen == "izquierda" or self.posicion_imagen == "derecha" %}
     <div class="bloque-contenido flex-layout">
-        {% if self.posicion_imagen == "izquierda" and self.imagen %}
+        {% with imagen=self.imagenes.0 %}
+        {% if self.posicion_imagen == "izquierda" and imagen %}
         <div class="bloque-imagen">
-            {% image self.imagen original %}
+            {% image imagen original %}
         </div>
         {% endif %}
+        {% endwith %}
 
         <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
             {{ self.texto.texto|richtext }}
         </div>
 
-        {% if self.posicion_imagen == "derecha" and self.imagen %}
+        {% with imagen=self.imagenes.0 %}
+        {% if self.posicion_imagen == "derecha" and imagen %}
         <div class="bloque-imagen">
-            {% image self.imagen original %}
+            {% image imagen original %}
         </div>
         {% endif %}
+        {% endwith %}
     </div>
 
+    {# Imagen debajo del texto #}
     {% elif self.posicion_imagen == "abajo" %}
     <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
         {{ self.texto.texto|richtext }}
     </div>
-    {% if self.imagen %}
-    <div class="bloque-imagen">
-        {% image self.imagen original %}
-    </div>
-    {% endif %}
+    {% with imagen=self.imagenes.0 %}
+    {% if imagen %}
 
+    {% image imagen original %}
+    {% else %}
+    <p style="color:red">No hay imagen asignada</p>
+    {% endif %}
+    {% endwith %}
+
+    {# Galería de imágenes #}
     {% elif self.posicion_imagen == "galeria" %}
     <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
         {{ self.texto.texto|richtext }}
     </div>
-    {% if self.galeria %}
+    {% if self.imagenes %}
     <div class="bloque-galeria">
-        {% for img in self.galeria %}
+        {% for img in self.imagenes %}
         <div class="galeria-item">
             {% image img original %}
         </div>
@@ -90,5 +103,18 @@
         display: flex;
         gap: 1rem;
         flex-wrap: wrap;
+    }
+
+    .galeria-item img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+    }
+
+    .bloque-fondo {
+        background-size: cover;
+        background-position: center;
+        padding: 2rem;
+        color: white;
     }
 </style>

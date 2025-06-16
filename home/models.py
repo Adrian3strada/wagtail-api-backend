@@ -24,7 +24,8 @@ from modelcluster.fields import ParentalKey
 from modelcluster.tags import ClusterTaggableManager
 from taggit.models import TaggedItemBase
 from taggit.models import Tag
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from wagtail.blocks import StructBlockValidationError
 
 
 @register_snippet
@@ -527,49 +528,69 @@ class ParrafoConAlineacionBlock(blocks.StructBlock):
         icon = 'doc-full'
         label = 'Párrafo con alineación'
 
+
+
 class ImagenConTextoBlock(blocks.StructBlock):
     titulo = RichTextBlock(required=False)
-    texto = ParrafoConAlineacionBlock()  
-    posicion_imagen = ChoiceBlock(choices=[
+    texto = ParrafoConAlineacionBlock()
+    
+    posicion_imagen = blocks.ChoiceBlock(choices=[
         ('fondo', 'Fondo'),
         ('izquierda', 'Izquierda'),
         ('derecha', 'Derecha'),
         ('abajo', 'Abajo'),
         ('galeria', 'Galería'),
-    ])
-    imagen = ImageChooserBlock(required=False)
-    galeria = ListBlock(ImageChooserBlock(), required=False)
+    ], required=True)
+
+    imagenes = blocks.ListBlock(ImageChooserBlock(), required=False, label="Imagen o Imágenes")
+
+    def clean(self, value):
+        cleaned_data = super().clean(value)
+        posicion = cleaned_data.get("posicion_imagen")
+        imagenes = cleaned_data.get("imagenes") or []
+
+        errors = {}
+
+        if posicion == "galeria":
+            if not imagenes or all(img is None for img in imagenes):
+                errors["imagenes"] = blocks.StreamBlockValidationError("Debes subir al menos una imagen para la galería.")
+        else:
+            if len(imagenes) != 1:
+                errors["imagenes"] = blocks.StreamBlockValidationError("Debes subir solo una imagen para esta posición.")
+
+        if errors:
+            raise StructBlockValidationError(errors)
+
+        return cleaned_data
 
     def get_api_representation(self, value, context=None):
-        imagen = value.get("imagen")
-        galeria = value.get("galeria", [])
+        imagenes = value.get("imagenes", [])
+        posicion = value.get("posicion_imagen")
         texto_struct = value.get("texto")
         alineacion = texto_struct.get("alineacion")
         texto_html = str(texto_struct.get("texto"))
+
+        imagen_data = [
+            {
+                "id": img.id,
+                "url": img.get_rendition("original").url,
+                "title": img.title
+            } for img in imagenes if img is not None
+        ]
 
         return {
             "titulo": str(value.get("titulo")) if value.get("titulo") else "",
             "texto": texto_html,
             "alineacion_texto": alineacion,
-            "posicion_imagen": value.get("posicion_imagen"),
-            "imagen": {
-                "id": imagen.id,
-                "url": imagen.get_rendition("original").url,
-                "title": imagen.title
-            } if imagen else None,
-            "galeria": [
-                {
-                    "id": img.id,
-                    "url": img.get_rendition("original").url,
-                    "title": img.title
-                } for img in galeria if img is not None
-            ]
+            "posicion_imagen": posicion,
+            "imagenes": imagen_data
         }
 
     class Meta:
         icon = 'image'
         label = 'Bloque de Imagen y Texto'
         template = 'blocks/texto_imagen_block.html'
+
 
 class GalleryImageBlock(blocks.StructBlock):
     image = CustomImageBlock(required=True, label="Imagen")
@@ -1083,7 +1104,7 @@ class HomePage(BaseContentPage):
 
 
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 class NoticiasIndexPage(BaseContentPage):
     subpage_types = ['home.NoticiaPage']
 
@@ -1120,7 +1141,7 @@ class NoticiasIndexPage(BaseContentPage):
         tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
 
         context['noticias'] = noticias_paginated
-        context['page_obj'] = noticias_paginated  # para paginación en el template
+        context['page_obj'] = noticias_paginated  
         context['categorias'] = CategoriaNoticia.objects.all()
         context['tags'] = tags_relacionados
         context['current_categoria'] = categoria
@@ -1152,6 +1173,19 @@ class NoticiaPage(BaseContentPage):
 
     subpage_types = []
     parent_page_types = ['home.NoticiasIndexPage']
+
+    def get_context(self, request):
+        context = super().get_context(request)
+        noticias_index = NoticiasIndexPage.objects.live().first()
+
+        # Construye la URL con parámetro de categoría (si existe)
+        if self.categoria:
+            noticias_index_url = f"{noticias_index.url}?categoria={self.categoria.slug}"
+        else:
+            noticias_index_url = noticias_index.url
+
+        context["noticias_index_url"] = noticias_index_url
+        return context
 
 
 
@@ -1233,6 +1267,18 @@ class EventoPage(BaseContentPage):
 
     subpage_types = []
     parent_page_types = ['home.EventosIndexPage']
+
+    def get_context(self, request):
+        context = super().get_context(request)
+        eventos_index = EventosIndexPage.objects.live().first()
+
+        if self.categoria:
+            eventos_index_url = f"{eventos_index.url}?categoria={self.categoria.slug}"
+        else:
+            eventos_index_url = eventos_index.url
+
+        context["eventos_index_url"] = eventos_index_url
+        return context
 
 class PaginaInformativaPage(BaseContentPage):  
     parent_page_types = ['home.HomePage']
