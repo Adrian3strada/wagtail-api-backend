@@ -1,0 +1,26 @@
+{% load wagtailcore_tags %}
+
+<section class="noticias-filtradas">
+    {% if self.titulo %}
+    <h2>{{ self.titulo }}</h2>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for noticia in noticias %}
+        <article class="bg-white rounded-lg shadow p-4">
+            <h3 class="text-lg font-bold">
+                <a href="{{ noticia.url }}">{{ noticia.title }}</a>
+            </h3>
+            <p class="text-sm text-gray-500">
+                {{ noticia.first_published_at|date:"d M Y" }}
+                {% if noticia.categoria %} — {{ noticia.categoria.nombre }}{% endif %}
+            </p>
+            <p class="text-gray-700 mt-2">
+                {{ noticia.search_description|truncatewords:20 }}
+            </p>
+        </article>
+        {% empty %}
+        <p>No hay noticias disponibles.</p>
+        {% endfor %}
+    </div>
+</section>

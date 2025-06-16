@@ -897,14 +897,14 @@ class ModuloBlock(blocks.StructBlock):
 
 class ModulosCertiffyBlockNuevo(blocks.StructBlock):
     titulo_seccion = blocks.CharBlock(required=True, label="Título de la sección")
-    texto_principal = blocks.RichTextBlock(required=True, label="Texto introductorio")
+    texto = ParrafoConAlineacionBlock()
     video_url = blocks.URLBlock(required=False, label="URL del video introductorio (opcional)")
     modulos = blocks.ListBlock(ModuloBlock, label="Módulos")
 
     def get_api_representation(self, value, context=None):
         return {
             "titulo_seccion": value.get("titulo_seccion", ""),
-            "texto_principal": str(value.get("texto_principal", "")),
+            "texto": self.child_blocks['texto'].get_api_representation(value.get('texto'), context) if value.get("texto") else None,
             "video_url": value.get("video_url", ""),
             "modulos": [
                 self.child_blocks['modulos'].child_block.get_api_representation(modulo, context)
@@ -919,6 +919,42 @@ class ModulosCertiffyBlockNuevo(blocks.StructBlock):
 
 
 
+class NoticiasFiltradasBlock(blocks.StructBlock):
+    titulo = blocks.CharBlock(required=False, help_text="Título opcional")
+    categoria = SnippetChooserBlock('home.CategoriaNoticia', required=False)
+    tag = blocks.CharBlock(required=False, help_text="Slug del tag (opcional)")
+    numero_maximo = blocks.IntegerBlock(default=6, min_value=1)
+
+    class Meta:
+        template = 'blocks/noticias_filtradas.html'
+        icon = 'list-ul'
+        label = 'Noticias filtradas'
+
+    def get_api_representation(self, value, context=None):
+        return {
+            "titulo": value.get("titulo"),
+            "categoria": {
+                "id": value["categoria"].id,
+                "nombre": value["categoria"].nombre,
+                "slug": value["categoria"].slug,
+            } if value.get("categoria") else None,
+            "tag": value.get("tag"),
+            "numero_maximo": value.get("numero_maximo", 6),
+        }
+
+    def get_context(self, value, parent_context=None):
+        context = super().get_context(value, parent_context)
+
+        noticias = NoticiaPage.objects.live().order_by("-first_published_at")
+
+        if value.get("categoria"):
+            noticias = noticias.filter(categoria=value["categoria"])
+
+        if value.get("tag"):
+            noticias = noticias.filter(tags__slug=value["tag"])
+
+        context["noticias"] = noticias[:value.get("numero_maximo", 6)]
+        return context  
 
 
 
@@ -960,7 +996,8 @@ common_streamfield = [
     ('gallery_image', GalleryImageBlock()),
     ('modulos_certiffy', ModulosCertiffyBlockNuevo()),
     ('parrafo_con_alineacion', ParrafoConAlineacionBlock()),
-    
+    ('noticias_filtradas', NoticiasFiltradasBlock()),
+
 
 ]
 
@@ -1046,13 +1083,12 @@ class HomePage(BaseContentPage):
 
 
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 class NoticiasIndexPage(BaseContentPage):
-
     subpage_types = ['home.NoticiaPage']
 
     def get_context(self, request):
         context = super().get_context(request)
-        
 
         noticias = NoticiaPage.objects.live().descendant_of(self)
 
@@ -1065,15 +1101,26 @@ class NoticiasIndexPage(BaseContentPage):
         if tag:
             noticias = noticias.filter(tags__slug=tag)
 
-        noticia_ids = noticias.values_list('id', flat=True)
+        # Paginación
+        paginator = Paginator(noticias, 6)  # 6 noticias por página
+        page = request.GET.get('page')
 
+        try:
+            noticias_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            noticias_paginated = paginator.page(1)
+        except EmptyPage:
+            noticias_paginated = paginator.page(paginator.num_pages)
+
+        noticia_ids = noticias_paginated.object_list.values_list('id', flat=True)
         tag_ids = NoticiaPageTag.objects.filter(
-            content_object_id__in=noticia_ids  # ← aquí la corrección
+            content_object_id__in=noticia_ids
         ).values_list('tag_id', flat=True)
 
         tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
 
-        context['noticias'] = noticias
+        context['noticias'] = noticias_paginated
+        context['page_obj'] = noticias_paginated  # para paginación en el template
         context['categorias'] = CategoriaNoticia.objects.all()
         context['tags'] = tags_relacionados
         context['current_categoria'] = categoria
@@ -1106,6 +1153,8 @@ class NoticiaPage(BaseContentPage):
     subpage_types = []
     parent_page_types = ['home.NoticiasIndexPage']
 
+
+
 class EventosIndexPage(BaseContentPage):
     subpage_types = ['home.EventoPage']
     parent_page_types = ['home.HomePage']
@@ -1124,15 +1173,26 @@ class EventosIndexPage(BaseContentPage):
         if tag:
             eventos = eventos.filter(tags__slug=tag)
 
-        evento_ids = eventos.values_list('id', flat=True)
+        # Paginación (ajusta el número de eventos por página si quieres)
+        paginator = Paginator(eventos, 6)
+        page = request.GET.get('page')
 
+        try:
+            eventos_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            eventos_paginated = paginator.page(1)
+        except EmptyPage:
+            eventos_paginated = paginator.page(paginator.num_pages)
+
+        evento_ids = eventos_paginated.object_list.values_list('id', flat=True)
         tag_ids = EventoPageTag.objects.filter(
             content_object_id__in=evento_ids
         ).values_list('tag_id', flat=True)
 
         tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
 
-        context['eventos'] = eventos
+        context['eventos'] = eventos_paginated
+        context['page_obj'] = eventos_paginated
         context['categorias'] = CategoriaEvento.objects.all()
         context['tags'] = tags_relacionados
         context['current_categoria'] = categoria

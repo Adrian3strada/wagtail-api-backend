@@ -126,8 +126,8 @@ class LocalesAPIViewSet(BaseAPIViewSet):
             for locale in Locale.objects.all()
         ])
 
-
-class NavbarAPIViewSet(BaseAPIViewSet):
+class NavbarAPIViewSet(PagesAPIViewSet):
+    model = Page
     def listing_view(self, request, *args, **kwargs):
         lang = CustomPagesAPIViewSet().get_locale_language(request)
         activate(lang)
@@ -152,8 +152,6 @@ class NavbarAPIViewSet(BaseAPIViewSet):
             'favicon': branding.favicon.file.url if branding and branding.favicon else None,
             'current_language': lang
         })
-
-
 class FooterAPIViewSet(PagesAPIViewSet):
     model = Page
 
@@ -187,7 +185,9 @@ class FooterAPIViewSet(PagesAPIViewSet):
         })
 
 
-class NoticiasAPIViewSet(BaseAPIViewSet):
+class NoticiasAPIViewSet(PagesAPIViewSet):
+    model = NoticiaPage
+
     def listing_view(self, request, *args, **kwargs):
         lang = CustomPagesAPIViewSet().get_locale_language(request)
         activate(lang)
@@ -197,10 +197,24 @@ class NoticiasAPIViewSet(BaseAPIViewSet):
         tag_slug = request.GET.get("tag")
 
         noticias = NoticiaPage.objects.live().filter(locale=current_locale)
-        if categoria_slug:
+
+        if categoria_slug and tag_slug:
+            noticias = noticias.filter(
+                categoria__slug=categoria_slug,
+                tags__slug=tag_slug
+            ).distinct()
+        elif categoria_slug:
             noticias = noticias.filter(categoria__slug=categoria_slug)
-        if tag_slug:
+        elif tag_slug:
             noticias = noticias.filter(tags__slug=tag_slug)
+
+        page_number = request.GET.get("page", 1)
+        paginator = Paginator(noticias, 6)
+
+        try:
+            page_obj = paginator.page(page_number)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
 
         noticias_data = [{
             'id': n.id,
@@ -209,7 +223,7 @@ class NoticiasAPIViewSet(BaseAPIViewSet):
             'categoria': n.categoria.nombre if n.categoria else None,
             'tags': [tag.name for tag in n.tags.all()],
             'date': n.first_published_at,
-        } for n in noticias]
+        } for n in page_obj]
 
         categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaNoticia.objects.all()]
         tag_ids = NoticiaPageTag.objects.filter(
@@ -222,13 +236,22 @@ class NoticiasAPIViewSet(BaseAPIViewSet):
             "categorias": categorias_data,
             "tags": tags_data,
             "current_categoria": categoria_slug,
-            "current_tag": tag_slug
+            "current_tag": tag_slug,
+            "pagination": {
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+                "total_items": paginator.count,
+            }
         })
 
+from django.core.paginator import Paginator, EmptyPage
 
-class EventosAPIViewSet(BaseAPIViewSet):
+class EventosAPIViewSet(PagesAPIViewSet):
+    model = EventoPage
+
     def listing_view(self, request, *args, **kwargs):
-        # Obtener el idioma de la URL o parámetro ?locale=es
         lang = CustomPagesAPIViewSet().get_locale_language(request)
         activate(lang)
         current_locale = get_current_locale(lang)
@@ -236,7 +259,6 @@ class EventosAPIViewSet(BaseAPIViewSet):
         categoria_slug = request.GET.get("categoria")
         tag_slug = request.GET.get("tag")
 
-        # Filtro base
         eventos = EventoPage.objects.live().filter(locale=current_locale)
 
         if categoria_slug:
@@ -244,6 +266,15 @@ class EventosAPIViewSet(BaseAPIViewSet):
 
         if tag_slug:
             eventos = eventos.filter(tags__slug=tag_slug)
+
+        # Paginación
+        page_number = request.GET.get("page", 1)
+        paginator = Paginator(eventos, 6)
+
+        try:
+            page_obj = paginator.page(page_number)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
 
         eventos_data = [{
             "id": e.id,
@@ -254,14 +285,12 @@ class EventosAPIViewSet(BaseAPIViewSet):
             "mapa_url": e.mapa_url,
             "categoria": e.categoria.nombre if e.categoria else None,
             "tags": [tag.name for tag in e.tags.all()],
-        } for e in eventos]
+        } for e in page_obj]
 
         categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaEvento.objects.all()]
-
         tag_ids = EventoPageTag.objects.filter(
             content_object_id__in=eventos.values_list("id", flat=True)
         ).values_list("tag_id", flat=True)
-
         tags_data = [{"slug": t.slug, "name": t.name} for t in Tag.objects.filter(id__in=tag_ids).distinct()]
 
         return Response({
@@ -269,5 +298,12 @@ class EventosAPIViewSet(BaseAPIViewSet):
             "categorias": categorias_data,
             "tags": tags_data,
             "current_categoria": categoria_slug,
-            "current_tag": tag_slug
+            "current_tag": tag_slug,
+            "pagination": {
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+                "total_items": paginator.count,
+            }
         })
