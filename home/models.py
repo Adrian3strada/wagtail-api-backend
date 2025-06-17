@@ -507,7 +507,7 @@ class PlataformBlock(blocks.StructBlock):
         }
 
 
-from django.core.exceptions import ValidationError
+
 class ParrafoConAlineacionBlock(blocks.StructBlock):
     alineacion = blocks.ChoiceBlock(
         choices=[
@@ -522,7 +522,7 @@ class ParrafoConAlineacionBlock(blocks.StructBlock):
     texto = blocks.RichTextBlock(label="Texto enriquecido")
 
     def get_api_representation(self, value, context=None, **kwargs):
-        # Validar que el valor es un dict antes de acceder
+        
         if not isinstance(value, dict):
             return {"alineacion": "left", "texto": ""}
 
@@ -532,6 +532,7 @@ class ParrafoConAlineacionBlock(blocks.StructBlock):
         }
 
     class Meta:
+        template = "blocks/texto_alineado.html"
         icon = 'doc-full'
         label = 'Párrafo con alineación'
 

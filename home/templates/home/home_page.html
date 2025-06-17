@@ -5,25 +5,27 @@
 {% block content %}
 
 
-<div class="container py-5">
-
-
+<div class="container py-12">
     {% for block in page.body %}
     {% if block.block_type == 'carousel' %}
     <div id="heroCarousel" class="carousel slide carousel-fade w-100" data-bs-ride="carousel" style="height: 100vh;">
         <div class="carousel-inner w-100 h-100">
             {% for item in block.value.images %}
             {% image item.image original as img %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %} w-100 h-100 position-relative">
+            <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative w-100 h-100">
                 <img src="{{ img.url }}" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0"
                     alt="{{ item.caption }}">
                 <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+
+
                 <div
-                    class="container h-100 d-flex align-items-center justify-content-between text-white position-relative z-2">
+                    class="container h-100 d-flex align-items-center justify-content-around gap-4 px-4 text-white position-relative z-2">
+                    <!-- Texto -->
                     <div class="col-md-6">
                         <h1 class="display-4 fw-bold">{{ item.caption }}</h1>
-                        <p class="lead">Texto adicional aquí si deseas reforzar la idea del slide.</p>
                     </div>
+
+                    <!-- Video -->
                     {% if block.value.mostrar_video and block.value.teaser_video_url and block.value.main_video_url %}
                     <div class="col-md-5 d-none d-md-block">
                         <div class="card bg-white border-0 shadow">
@@ -33,9 +35,7 @@
                             </div>
                             <div class="card-body text-center">
                                 <button class="btn btn-primary"
-                                    onclick="switchToMainVideo('{{ block.value.main_video_url }}')">
-                                    ▶ Ver video
-                                </button>
+                                    onclick="switchToMainVideo('{{ block.value.main_video_url }}')">▶ Ver video</button>
                             </div>
                         </div>
                     </div>
@@ -44,13 +44,17 @@
             </div>
             {% endfor %}
         </div>
+
         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
+            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
+            <span class="carousel-control-next-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
         </button>
     </div>
+
     <script>
         function switchToMainVideo(url) {
             document.getElementById('videoFrame').src = url;
@@ -71,7 +75,7 @@
                     </div>
                     {% endif %}
                     <div class="card-body">
-                        <h5 class="card-title">{{ tarjeta.titulo }}</h5>
+                        <h5 class="card-title fw-bold text-primary">{{ tarjeta.titulo }}</h5>
                         <p class="card-text">{{ tarjeta.descripcion }}</p>
                     </div>
                     {% if tarjeta.enlace %}
@@ -86,47 +90,29 @@
     </div>
     {% endif %}
 
-    {# ----- CARDS ----- #}
-    {% if block.block_type == 'cards' %}
-    <div class="container py-5">
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            {% for tarjeta in block.value.tarjetas %}
-            <div class="col">
-                <div class="card h-100 border-0 shadow rounded">
-                    {% if tarjeta.imagen %}
-                    <div class="ratio ratio-16x9">
-                        {% image tarjeta.imagen original class="card-img-top" alt=tarjeta.titulo %}
-                    </div>
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title text-primary fw-bold">{{ tarjeta.titulo }}</h5>
-                        <p class="card-text">{{ tarjeta.descripcion }}</p>
-                    </div>
-                    {% if tarjeta.enlace %}
-                    <div class="card-footer bg-white border-0">
-                        <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">{% trans "Ver más" %}</a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+
 
 
     {% if block.block_type == 'testimonios' %}
-    <section class="py-5" style="background-color: #001E62;">
+    <section class="py-5 {% if not testimonio.imagen %}bg-dark-blue{% endif %}">
+
         <div class="container">
             <div class="row justify-content-center">
                 {% for testimonio in block.value.testimonios %}
+                {% if testimonio.texto %}
                 <div class="col-md-8">
                     <div class="bg-white text-dark p-4 rounded shadow mb-4 border-start border-5 border-warning">
                         <blockquote class="blockquote mb-0">
-                            <p class="fs-5 fw-semibold">“{{ testimonio.texto }}”</p>
-                            <footer class="blockquote-footer">{{ testimonio.autor }}</footer>
+                            <p class="fs-5 fw-semibold text-primary-emphasis">
+                                <i class="bi bi-quote fs-3 me-2 text-warning"></i>{{ testimonio.texto }}
+                            </p>
+                            {% if testimonio.autor %}
+                            <footer class="blockquote-footer mt-2">{{ testimonio.autor }}</footer>
+                            {% endif %}
                         </blockquote>
                     </div>
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -134,7 +120,7 @@
     {% endif %}
 
 
-    {% elif block.block_type == 'modulo_certiffy' %}
+    {% if block.block_type == 'modulo_certiffy' %}
     <section class="py-5" style="background-color: #001E62; color: white;">
         <div class="container">
             <div class="row align-items-center">
@@ -163,6 +149,7 @@
             </div>
         </div>
     </section>
+    {% endif %}
 
 
 
@@ -181,7 +168,8 @@
     </div>
     {% endif %}
 
-    {% elif block.block_type == 'cardsED' %}
+
+    {% if block.block_type == 'cardsED' %}
     <style>
         .btn-certiffy-azul {
             background-color: #001E62;
@@ -205,7 +193,6 @@
             box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
         }
     </style>
-
     <section class="py-5 bg-light">
         <div class="container">
             <div class="row row-cols-1 row-cols-md-2 g-4">
@@ -216,7 +203,6 @@
                             <h5 class="card-title fw-bold text-primary border-bottom pb-2 mb-3">{{ tarjeta.titulo }}
                             </h5>
                             <div class="card-text">{{ tarjeta.descripcion|richtext }}</div>
-
                             {% if tarjeta.textos_adicionales %}
                             <div class="mt-3">
                                 {% for texto in tarjeta.textos_adicionales %}
@@ -225,7 +211,6 @@
                             </div>
                             {% endif %}
                         </div>
-
                         {% if tarjeta.enlace %}
                         <div class="card-footer bg-white border-0 px-4 pb-4">
                             <a href="{{ tarjeta.enlace.url }}"
@@ -241,37 +226,12 @@
             </div>
         </div>
     </section>
+    {% endif %}
 
 
-    {% elif block.block_type == 'cards' %}
-    <div class="container my-5">
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            {% for tarjeta in block.value.tarjetas %}
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 rounded">
-                    {% if tarjeta.imagen %}
-                    <div class="ratio ratio-16x9">
 
-                        {% image tarjeta.imagen original class="card-img-top" alt=tarjeta.titulo %}
-                    </div>
 
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ tarjeta.titulo }}</h5>
-                        <p class="card-text">{{ tarjeta.descripcion }}</p>
-                    </div>
-                    {% if tarjeta.enlace %}
-                    <div class="card-footer bg-white border-0">
-                        <a href="{{ tarjeta.enlace }}" class="btn btn-outline-primary">Ver más</a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    {% elif block.block_type == 'socios' %}
+    {% if block.block_type == 'socios' %}
     <div class="text-center mb-5">
         <h3 class="mb-4">{{ block.value.titulo }}</h3>
         <div class="d-flex flex-wrap justify-content-center gap-4">
@@ -287,7 +247,9 @@
             {% endfor %}
         </div>
     </div>
-    {% elif block.block_type == 'parrafo_con_estilo' %}
+    {% endif %}
+
+    {% if block.block_type == 'parrafo_con_estilo' %}
     <div class="contenido-richtext mb-5">
         {{ block.value|richtext }}
     </div>
