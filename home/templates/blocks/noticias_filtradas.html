@@ -1,26 +1,48 @@
 {% load wagtailcore_tags %}
 
-<section class="noticias-filtradas">
-    {% if self.titulo %}
-    <h2>{{ self.titulo }}</h2>
+<section class="news-section">
+    {% if self.title %}
+    <h2>{{ self.title }}</h2>
     {% endif %}
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% if self.show_categories %}
+    <div class="categories">
+        {% for categoria in categorias %}
+        <a href="?categoria={{ categoria.slug }}">{{ categoria.nombre }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if self.show_tags %}
+    <div class="tags">
+        {% for tag in tags %}
+        <a href="?tag={{ tag.slug }}">{{ tag.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="noticias">
         {% for noticia in noticias %}
-        <article class="bg-white rounded-lg shadow p-4">
-            <h3 class="text-lg font-bold">
-                <a href="{{ noticia.url }}">{{ noticia.title }}</a>
-            </h3>
-            <p class="text-sm text-gray-500">
-                {{ noticia.first_published_at|date:"d M Y" }}
-                {% if noticia.categoria %} — {{ noticia.categoria.nombre }}{% endif %}
-            </p>
-            <p class="text-gray-700 mt-2">
-                {{ noticia.search_description|truncatewords:20 }}
-            </p>
+        <article>
+            <a href="{{ noticia.url }}">
+                <h3>{{ noticia.title }}</h3>
+                <p>{{ noticia.categoria }}</p>
+            </a>
         </article>
         {% empty %}
-        <p>No hay noticias disponibles.</p>
+        <p>No hay noticias para mostrar.</p>
         {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {% endif %}
+
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+        {% endif %}
     </div>
 </section>

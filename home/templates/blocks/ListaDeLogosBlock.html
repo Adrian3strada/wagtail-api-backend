@@ -1,9 +1,27 @@
 {% load wagtailcore_tags %}
-<div class="text-center mb-5">
-    <h3 class="mb-4">{{ self.titulo }}</h3>
-    <div class="d-flex flex-wrap justify-content-center gap-4">
+
+<style>
+    .logo-grayscale img {
+        filter: grayscale(100%);
+        opacity: 0.7;
+        transition: all 0.3s ease-in-out;
+        max-height: 100px;
+    }
+
+    .logo-grayscale img:hover {
+        filter: grayscale(0%);
+        opacity: 1;
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="text-center my-5">
+    <h3 class="mb-4 text-primary fw-bold">{{ self.titulo }}</h3>
+    <div class="d-flex flex-wrap justify-content-center align-items-center gap-4">
         {% for logo in self.logos %}
-        {% include_block logo %}
+        <div class="logo-grayscale">
+            {% include_block logo %}
+        </div>
         {% endfor %}
     </div>
 </div>

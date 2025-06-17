@@ -1,101 +1,26 @@
 {% load wagtailimages_tags %}
 
 {% if self.imagen %}
-{% image self.imagen fill-800x450-c100 as img %}
-<div class="pacto-verde-banner" style="background-image: url('{{ img.url }}');">
-    <div class="overlay"></div> {# Overlay semitransparente para contraste #}
-    <div class="contenido">
-        <h2>{{ self.titulo }}</h2>
+{% image self.imagen fill-1600x500-c100 as img %}
+<div class="w-100 position-relative text-white text-center overflow-hidden"
+    style="background-image: url('{{ img.url }}'); background-size: cover; background-position: center;">
+
+    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"></div>
+
+    <div class="position-relative container py-5">
+        <h2 class="display-4 fw-bold">{{ self.titulo }}</h2>
         {% if self.descripcion %}
-        <p>{{ self.descripcion }}</p>
+        <p class="lead">{{ self.descripcion }}</p>
         {% endif %}
     </div>
 </div>
 {% else %}
-<div class="pacto-verde-banner no-imagen">
-    <div class="contenido">
-        <h2>{{ self.titulo }}</h2>
+<div class="w-100 bg-success text-white text-center py-5">
+    <div class="container">
+        <h2 class="display-4 fw-bold">{{ self.titulo }}</h2>
         {% if self.descripcion %}
-        <p>{{ self.descripcion }}</p>
+        <p class="lead">{{ self.descripcion }}</p>
         {% endif %}
     </div>
 </div>
 {% endif %}
-
-<style>
-    .pacto-verde-banner {
-        position: relative;
-        background-size: cover;
-        background-position: center;
-        border-radius: 2px;
-        padding: 60px 20px;
-        color: white;
-        box-shadow: 0 4px 8px rgb(0 0 0 / 0.2);
-        overflow: hidden;
-
-        width: 100vw;
-        max-width: 100vw;
-
-        margin: 2rem 0;
-        margin-left: calc(-50vw + 50%);
-        margin-right: calc(-50vw + 50%);
-
-        min-height: 180px;
-
-        aspect-ratio: 16 / 5;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .pacto-verde-banner .overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-
-        z-index: 0;
-        border-radius: 12px;
-    }
-
-    .pacto-verde-banner .contenido {
-        position: relative;
-        z-index: 1;
-        max-width: 700px;
-    }
-
-    .pacto-verde-banner.no-imagen {
-        background-color: #4caf50;
-        color: white;
-        min-height: 150px;
-    }
-
-    .pacto-verde-banner h2 {
-        font-weight: 700;
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .pacto-verde-banner p {
-        font-size: 1.25rem;
-        font-weight: 400;
-        margin: 0;
-    }
-
-    /* Responsive para móviles */
-    @media (max-width: 600px) {
-        .pacto-verde-banner {
-            padding: 40px 15px;
-            min-height: 250px;
-        }
-
-        .pacto-verde-banner h2 {
-            font-size: 1.8rem;
-        }
-
-        .pacto-verde-banner p {
-            font-size: 1rem;
-        }
-    }
-</style>

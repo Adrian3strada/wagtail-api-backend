@@ -4,69 +4,70 @@
 <div class="bloque-imagen-texto posicion-{{ self.posicion_imagen }}">
 
     {% if self.titulo %}
-    <h2 class="bloque-titulo">{{ self.titulo|richtext }}</h2>
+    <h2 class="bloque-titulo text-center">{{ self.titulo|richtext }}</h2>
     {% endif %}
 
     {# Fondo o Herobanner con imagen #}
     {% if self.posicion_imagen == "fondo" or self.posicion_imagen == "herobanner" %}
     {% with imagen=self.imagenes.0 %}
     {% if imagen %}
-    <div class="bloque-fondo" style="background-image: url('{{ imagen.url }}');">
-        <div class="bloque-texto fondo-texto" style="text-align: {{ self.texto.alineacion }};">
-            {{ self.texto.texto|richtext }}
+    <div class="bloque-fondo d-flex align-items-center justify-content-center">
+        <div class="bloque-overlay">
+            <div class="bloque-texto fondo-texto" style="text-align: {{ self.texto.alineacion }};">
+                {{ self.texto.texto|richtext }}
+            </div>
         </div>
+        <div class="bloque-fondo-img" style="background-image: url('{{ imagen.url }}');"></div>
     </div>
     {% endif %}
     {% endwith %}
 
-    {# Imagen a la izquierda o derecha #}
     {% elif self.posicion_imagen == "izquierda" or self.posicion_imagen == "derecha" %}
-    <div class="bloque-contenido flex-layout">
+    <div class="bloque-contenido row align-items-center">
         {% with imagen=self.imagenes.0 %}
         {% if self.posicion_imagen == "izquierda" and imagen %}
-        <div class="bloque-imagen">
-            {% image imagen original %}
+        <div class="col-md-6 bloque-imagen">
+            {% image imagen original class="img-fluid rounded shadow" %}
         </div>
         {% endif %}
         {% endwith %}
 
-        <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+        <div class="col-md-6 bloque-texto" style="text-align: {{ self.texto.alineacion }};">
             {{ self.texto.texto|richtext }}
         </div>
 
         {% with imagen=self.imagenes.0 %}
         {% if self.posicion_imagen == "derecha" and imagen %}
-        <div class="bloque-imagen">
-            {% image imagen original %}
+        <div class="col-md-6 bloque-imagen">
+            {% image imagen original class="img-fluid rounded shadow" %}
         </div>
         {% endif %}
         {% endwith %}
     </div>
 
-    {# Imagen debajo del texto #}
     {% elif self.posicion_imagen == "abajo" %}
-    <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+    <div class="bloque-texto mb-3" style="text-align: {{ self.texto.alineacion }};">
         {{ self.texto.texto|richtext }}
     </div>
     {% with imagen=self.imagenes.0 %}
     {% if imagen %}
-
-    {% image imagen original %}
+    <div class="bloque-imagen text-center">
+        {% image imagen original class="img-fluid rounded shadow" %}
+    </div>
     {% else %}
     <p style="color:red">No hay imagen asignada</p>
     {% endif %}
     {% endwith %}
 
-    {# Galería de imágenes #}
     {% elif self.posicion_imagen == "galeria" %}
-    <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+    <div class="bloque-texto mb-3" style="text-align: {{ self.texto.alineacion }};">
         {{ self.texto.texto|richtext }}
     </div>
     {% if self.imagenes %}
-    <div class="bloque-galeria">
+    <div class="bloque-galeria d-flex flex-wrap gap-3 justify-content-center">
         {% for img in self.imagenes %}
         <div class="galeria-item">
-            {% image img original %}
+            {% image img fill-400x300 class="img-fluid rounded shadow-sm" %}
         </div>
         {% endfor %}
     </div>
@@ -75,46 +76,53 @@
 </div>
 
 <style>
-    .bloque-imagen-texto {
-        margin-bottom: 2rem;
-    }
-
     .bloque-titulo {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .flex-layout {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-
-    .bloque-texto {
-        flex: 1;
-    }
-
-    .bloque-imagen img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .bloque-galeria {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .galeria-item img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 6px;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #0A1A42;
     }
 
     .bloque-fondo {
+        position: relative;
+        min-height: 300px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .bloque-fondo-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background-size: cover;
         background-position: center;
-        padding: 2rem;
+        filter: brightness(0.6);
+    }
+
+    .bloque-overlay {
+        position: relative;
+        z-index: 2;
+        padding: 4rem 2rem;
         color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        text-align: center;
+    }
+
+    .bloque-contenido {
+        margin-bottom: 2rem;
+    }
+
+    .bloque-texto {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #333;
+    }
+
+    .bloque-galeria .galeria-item {
+        flex: 0 0 auto;
+        width: 250px;
     }
 </style>

@@ -260,13 +260,16 @@ class EventosAPIViewSet(PagesAPIViewSet):
 
         eventos = EventoPage.objects.live().filter(locale=current_locale)
 
-        if categoria_slug:
+        if categoria_slug and tag_slug:
+            eventos = eventos.filter(
+                categoria__slug=categoria_slug,
+                tags__slug=tag_slug
+            ).distinct()
+        elif categoria_slug:
             eventos = eventos.filter(categoria__slug=categoria_slug)
-
-        if tag_slug:
+        elif tag_slug:
             eventos = eventos.filter(tags__slug=tag_slug)
 
-        # Paginación
         page_number = request.GET.get("page", 1)
         paginator = Paginator(eventos, 6)
 
@@ -276,14 +279,12 @@ class EventosAPIViewSet(PagesAPIViewSet):
             page_obj = paginator.page(paginator.num_pages)
 
         eventos_data = [{
-            "id": e.id,
-            "title": e.title,
-            "url": e.url,
-            "fecha": e.fecha,
-            "ubicacion": e.ubicacion,
-            "mapa_url": e.mapa_url,
-            "categoria": e.categoria.nombre if e.categoria else None,
-            "tags": [tag.name for tag in e.tags.all()],
+            'id': e.id,
+            'title': e.title,
+            'url': e.url,
+            'categoria': e.categoria.nombre if e.categoria else None,
+            'tags': [tag.name for tag in e.tags.all()],
+            'date': e.first_published_at,
         } for e in page_obj]
 
         categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaEvento.objects.all()]

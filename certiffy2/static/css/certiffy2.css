@@ -1,180 +1,64 @@
-/* === Tipografía General === */
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Open Sans', sans-serif;
-    color: #0A1A42;
-    line-height: 1.6;
-}
-
-/* === Títulos === */
-h1,
-h2,
-h3,
-h4 {
-    text-align: center;
-    font-weight: 800;
-    /* ExtraBold */
+    background-color: #F9F9F9;
     color: #0A1A42;
 }
-
-h2 {
-    font-weight: 700;
-    /* Bold */
-}
-
-p,
-.contenido {
-
-    font-weight: 600;
-    /* SemiBold */
-    line-height: 1.5;
-    font-size: 1.1rem;
-}
-
-/* === Fondo azul marino con texto amarillo === */
-.bg-azul {
-    background-color: #0A1A42;
-    color: #DFBB43;
-}
-
-.bg-azul p,
-.bg-azul h1,
-.bg-azul h2,
-.bg-azul h3 {
-    color: #DFBB43;
-}
-
-
-/* Ocultar indicadores en pantallas muy pequeñas */
-@media (max-width: 576px) {
-    .carousel-indicators {
-        display: none;
-    }
-
-    .carousel-caption {
-        font-size: 0.85rem;
-        max-width: 90%;
-        bottom: 10px;
-        padding: 0.5rem;
-    }
-}
-
-/* Ajuste para pantallas medianas */
-@media (min-width: 577px) and (max-width: 991px) {
-    .carousel-caption {
-        font-size: 1rem;
-        max-width: 85%;
-    }
-}
-
-/* === Botones CTA === */
-.btn {
-    border-radius: 50px;
-    font-weight: 700;
-    transition: all 0.3s ease-in-out;
-    text-transform: uppercase;
-}
-
-.btn:hover {
-    transform: scale(1.05);
-}
-
-.btn-amarillo {
-    background-color: #DFBB43;
-    color: #0A1A42;
-    border: 2px solid #DFBB43;
-}
-
-.btn-amarillo:hover {
-    background-color: transparent;
-    color: #DFBB43;
-}
-
-/* === Cards === */
-.card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 0.5rem 1rem rgba(10, 26, 66, 0.1);
-
-}
-
-.card-title {
-    font-weight: 700;
-    color: #0A1A42;
-}
-
-.card-footer {
-    background-color: transparent;
-    border-top: none;
-}
-
-/* === Secciones === */
-section.acerca-de {
-    background-color: #f8f9fa;
-    padding: 3rem 1rem;
-    border-top: 3px solid #DFBB43;
-}
-
-section.acerca-de h2 {
-    color: #0A1A42;
-}
-
-/* === Logos Socios === */
-#socios img {
-    max-height: 100px;
-    transition: transform 0.3s ease;
-}
-
-#socios img:hover {
-    transform: scale(1.1);
-}
-
-/* === RichText === */
-.contenido-richtext {
-    padding: 2rem;
-    background-color: #FFFFFF;
-    color: #0A1A42;
-}
-
-/* === Micro-animaciones === */
-a.btn-cta {
-    display: inline-block;
-    margin: 0.5rem;
-    transition: transform 0.2s ease;
-}
-
-a.btn-cta:hover {
-    transform: scale(1.05);
-}
-
-
-
 
 .custom-navbar {
-    background-color: #0A1A42;
-    /* Azul marino */
-}
-
-.custom-navbar .nav-link {
-    color: #FFFFFF;
+    background-color: #001E62;
     font-weight: 600;
-    transition: color 0.3s ease;
 }
 
-.custom-navbar .nav-link:hover,
-.custom-navbar .nav-link.active {
-    color: #DFBB43;
-    /* Amarillo mostaza */
+.navbar-brand img {
+    max-height: 80px;
 }
 
-.custom-navbar .navbar-brand {
+.nav-link {
+    color: #ffffff !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #FFCC00 !important;
+    font-weight: bold;
+}
+
+footer {
+    background-color: #001E62;
+    color: #fff;
+}
+
+footer a {
+    color: #FFCC00;
+}
+
+select.form-select {
+    background-color: #ffffff;
+    color: #0A1A42;
+    border: 1px solid #ccc;
+}
+
+.titulo-seccion {
+    color: #E6A800;
     font-weight: 800;
-    color: #FFFFFF;
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-.custom-navbar .navbar-toggler {
-    border-color: #FFFFFF;
+.btn-certiffy {
+    background-color: #FFCC00;
+    color: #001E62;
+    border: none;
+    font-weight: bold;
 }
 
-.custom-navbar .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23DFBB43' viewBox='0 0 30 30'%3e%3cpath stroke='white' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+.btn-certiffy:hover {
+    background-color: #E6A800;
+    color: #fff;
 }

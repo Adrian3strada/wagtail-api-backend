@@ -1,9 +1,10 @@
 {% load wagtailcore_tags wagtailimages_tags %}
+
 <style>
     .titulo-seccion {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #DFBB43;
+        color: #0A1A42;
         margin-bottom: 1.5rem;
     }
 
@@ -15,25 +16,12 @@
         line-height: 1.6;
     }
 
-    .modulo-img-container {
-        width: 250px;
-        height: 250px;
-        overflow: hidden;
-    }
-
-    .modulo-img-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
     .modulo-video-container {
         position: relative;
         width: 100%;
         max-width: 960px;
         margin: 3rem auto 0 auto;
         padding-bottom: 56.25%;
-        /* 16:9 */
         height: 0;
         overflow: hidden;
         border-radius: 12px;
@@ -49,21 +37,31 @@
         border: 0;
     }
 
-    .btn-modulo {
-        font-size: 1rem;
-        padding: 0.75rem;
-        font-weight: bold;
-        letter-spacing: 1px;
+    .btn-certiffy-azul {
+        background-color: #001E62;
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-certiffy-azul:hover {
+        background-color: #003089;
+        color: #FFCC00;
+    }
+
+    .btn-certiffy-azul:disabled {
+        background-color: #ccc;
+        color: #666;
     }
 </style>
 
 <div class="container text-center my-5">
-    <div class="titulo-seccion">
-        {{ self.titulo_seccion|richtext }}
-    </div>
+    {% if self.titulo_seccion %}
+    <div class="titulo-seccion">{{ self.titulo_seccion }}</div>
+    {% endif %}
 
-    <div class="texto-principal">
-        {{ self.texto_principal|richtext }}
+    <div class="bloque-texto" style="text-align: {{ self.texto.alineacion }};">
+        {{ self.texto.texto|richtext }}
     </div>
 
     <div class="row justify-content-center">
@@ -75,11 +73,11 @@
             {% endif %}
 
             {% if modulo.enlace %}
-            <a href="{{ modulo.enlace }}" class="btn btn-primary btn-lg w-100 btn-modulo" style="text-transform: none;">
+            <a href="{{ modulo.enlace }}" class="btn btn-certiffy-azul btn-lg w-100 rounded-pill">
                 {{ modulo.titulo }}
             </a>
             {% else %}
-            <button class="btn btn-primary btn-lg w-100 btn-modulo" disabled style="text-transform: none;">
+            <button class="btn btn-certiffy-azul btn-lg w-100 rounded-pill" disabled>
                 {{ modulo.titulo }}
             </button>
             {% endif %}

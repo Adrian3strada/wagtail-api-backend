@@ -1,9 +1,6 @@
 {% load static wagtailcore_tags wagtailuserbar i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
-{% load i18n %}
-
-
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}" data-bs-theme="auto">
 
@@ -36,6 +33,67 @@
         html {
             scroll-behavior: smooth;
         }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #F9F9F9;
+            color: #0A1A42;
+        }
+
+        .custom-navbar {
+            background-color: #001E62;
+            font-weight: 600;
+        }
+
+        .navbar-brand img {
+            max-height: 50px;
+        }
+
+        .nav-link {
+            color: #ffffff !important;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #FFCC00 !important;
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: #001E62;
+            color: #fff;
+        }
+
+        footer a {
+            color: #FFCC00;
+        }
+
+        select.form-select {
+            background-color: #ffffff;
+            color: #0A1A42;
+            border: 1px solid #ccc;
+        }
+
+        .titulo-seccion {
+            color: #E6A800;
+            font-weight: 800;
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn-certiffy {
+            background-color: #FFCC00;
+            color: #001E62;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-certiffy:hover {
+            background-color: #E6A800;
+            color: #fff;
+        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -46,7 +104,7 @@
     <nav class="navbar navbar-expand-lg fixed-top shadow custom-navbar">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="{% static 'images/certiffy.png' %}" alt="Logo" height="40" class="me-2">
+                <img src="{% static 'images/certiffy.png' %}" alt="Logo" height="200" class="me-2">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,23 +122,47 @@
                     <li class="nav-item"><a class="nav-link" href="#noticias">Noticias</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
 
-
                     <li class="nav-item">
-                        <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center ms-3">
-                            {% csrf_token %}
-                     <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
-    <option value="es" {% if LANGUAGE_CODE == "es" %}selected{% endif %}>
-        🇪🇸 Español
-    </option>
-    <option value="en" {% if LANGUAGE_CODE == "en" %}selected{% endif %}>
-        🇬🇧 English
-    </option>
-    <option value="fr" {% if LANGUAGE_CODE == "fr" %}selected{% endif %}>
-        🇫🇷 Français
-    </option>
-</select>
+                        <div class="dropdown ms-3">
+                            <button class="btn dropdown-toggle rounded-pill px-3 py-1 text-white"
+                                style="background-color: #001E62; border: 1px solid #ffffff33;" type="button"
+                                id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if LANGUAGE_CODE == "es" %}
+                                🇪🇸 Español
+                                {% elif LANGUAGE_CODE == "en" %}
+                                🇬🇧 English
+                                {% elif LANGUAGE_CODE == "fr" %}
+                                🇫🇷 Français
+                                {% else %}
+                                🌐 Idioma
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="dropdown-item m-0 p-0">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="language" value="es">
+                                        <button type="submit" class="dropdown-item">🇪🇸 Español</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="dropdown-item m-0 p-0">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="language" value="en">
+                                        <button type="submit" class="dropdown-item">🇬🇧 English</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="dropdown-item m-0 p-0">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="language" value="fr">
+                                        <button type="submit" class="dropdown-item">🇫🇷 Français</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
 
-                        </form>
+
                     </li>
 
                 </ul>
@@ -88,15 +170,13 @@
         </div>
     </nav>
 
-
-    <main class="container mt-4" id="main-content" tabindex="-1">
+    <main class="container mt-5 pt-4" id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-white text-center py-3 mt-5">
+    <footer class="text-white text-center py-3 mt-5">
         <small>
-            &copy; 2025 Mi Sitio. Todos los derechos reservados.
-            <br>
+            &copy; 2025 Mi Sitio. Todos los derechos reservados.<br>
             <a href="#main-content" class="text-light text-decoration-underline">Volver arriba</a>
         </small>
     </footer>

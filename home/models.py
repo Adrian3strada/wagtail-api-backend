@@ -28,6 +28,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from wagtail.blocks import StructBlockValidationError
 
 
+
 @register_snippet
 class NavItem(models.Model):
     title = models.CharField(max_length=255)
@@ -504,7 +505,9 @@ class PlataformBlock(blocks.StructBlock):
                 for boton in value.get('botones', [])
             ],
         }
-    
+
+
+from django.core.exceptions import ValidationError
 class ParrafoConAlineacionBlock(blocks.StructBlock):
     alineacion = blocks.ChoiceBlock(
         choices=[
@@ -519,14 +522,20 @@ class ParrafoConAlineacionBlock(blocks.StructBlock):
     texto = blocks.RichTextBlock(label="Texto enriquecido")
 
     def get_api_representation(self, value, context=None, **kwargs):
+        # Validar que el valor es un dict antes de acceder
+        if not isinstance(value, dict):
+            return {"alineacion": "left", "texto": ""}
+
         return {
-            'alineacion': value['alineacion'],
-            'texto': value['texto'].source,  
+            'alineacion': value.get('alineacion', 'left'),
+            'texto': value.get('texto', '').source if hasattr(value.get('texto'), 'source') else value.get('texto', ''),
         }
 
     class Meta:
         icon = 'doc-full'
         label = 'Párrafo con alineación'
+
+
 
 
 
@@ -923,9 +932,17 @@ class ModulosCertiffyBlockNuevo(blocks.StructBlock):
     modulos = blocks.ListBlock(ModuloBlock, label="Módulos")
 
     def get_api_representation(self, value, context=None):
+        texto_valido = value.get("texto")
+        
+        # Aseguramos que texto_valido sea un dict antes de acceder a sus claves
+        if isinstance(texto_valido, dict):
+            texto_repr = self.child_blocks['texto'].get_api_representation(texto_valido, context)
+        else:
+            texto_repr = None  # o puedes usar {} para indicar que no hay texto válido
+
         return {
             "titulo_seccion": value.get("titulo_seccion", ""),
-            "texto": self.child_blocks['texto'].get_api_representation(value.get('texto'), context) if value.get("texto") else None,
+            "texto": texto_repr,
             "video_url": value.get("video_url", ""),
             "modulos": [
                 self.child_blocks['modulos'].child_block.get_api_representation(modulo, context)
@@ -940,42 +957,29 @@ class ModulosCertiffyBlockNuevo(blocks.StructBlock):
 
 
 
+
 class NoticiasFiltradasBlock(blocks.StructBlock):
-    titulo = blocks.CharBlock(required=False, help_text="Título opcional")
-    categoria = SnippetChooserBlock('home.CategoriaNoticia', required=False)
-    tag = blocks.CharBlock(required=False, help_text="Slug del tag (opcional)")
-    numero_maximo = blocks.IntegerBlock(default=6, min_value=1)
+    title = blocks.CharBlock(required=False, help_text="Título opcional para la sección")
+    show_categories = blocks.BooleanBlock(required=False, default=True)
+    show_tags = blocks.BooleanBlock(required=False, default=True)
+    items_per_page = blocks.IntegerBlock(default=6, min_value=1, max_value=50)
 
     class Meta:
-        template = 'blocks/noticias_filtradas.html'
         icon = 'list-ul'
-        label = 'Noticias filtradas'
+        label = 'Filtro de Noticias'
+        template = 'blocks/news_filter.html'
 
-    def get_api_representation(self, value, context=None):
-        return {
-            "titulo": value.get("titulo"),
-            "categoria": {
-                "id": value["categoria"].id,
-                "nombre": value["categoria"].nombre,
-                "slug": value["categoria"].slug,
-            } if value.get("categoria") else None,
-            "tag": value.get("tag"),
-            "numero_maximo": value.get("numero_maximo", 6),
-        }
+class EventosFiltradosBlock(blocks.StructBlock):
+    title = blocks.CharBlock(required=False, help_text="Título opcional para la sección")
+    show_categories = blocks.BooleanBlock(required=False, default=True)
+    show_tags = blocks.BooleanBlock(required=False, default=True)
+    items_per_page = blocks.IntegerBlock(default=6, min_value=1, max_value=50)
 
-    def get_context(self, value, parent_context=None):
-        context = super().get_context(value, parent_context)
+    class Meta:
+        icon = 'list-ul'
+        label = 'Filtro de Eventos'
+        template = 'blocks/event_filter.html'
 
-        noticias = NoticiaPage.objects.live().order_by("-first_published_at")
-
-        if value.get("categoria"):
-            noticias = noticias.filter(categoria=value["categoria"])
-
-        if value.get("tag"):
-            noticias = noticias.filter(tags__slug=value["tag"])
-
-        context["noticias"] = noticias[:value.get("numero_maximo", 6)]
-        return context  
 
 
 
@@ -1018,7 +1022,7 @@ common_streamfield = [
     ('modulos_certiffy', ModulosCertiffyBlockNuevo()),
     ('parrafo_con_alineacion', ParrafoConAlineacionBlock()),
     ('noticias_filtradas', NoticiasFiltradasBlock()),
-
+    ('eventos_filtrados', EventosFiltradosBlock()),
 
 ]
 
@@ -1105,27 +1109,49 @@ class HomePage(BaseContentPage):
 
 
 
+
 class NoticiasIndexPage(BaseContentPage):
     subpage_types = ['home.NoticiaPage']
+
+    content = StreamField(
+        [
+            ('news_filter', NoticiasFiltradasBlock()),
+            
+        ],
+        blank=True,
+        use_json_field=True
+    )
+
+    content_panels = BaseContentPage.content_panels + [
+        FieldPanel("content"),
+    ]
+
+    api_fields = BaseContentPage.api_fields + [
+        APIField("content"),
+    ]
 
     def get_context(self, request):
         context = super().get_context(request)
 
         noticias = NoticiaPage.objects.live().descendant_of(self)
 
+        # Obtener parámetros de filtrado
         categoria = request.GET.get('categoria')
         tag = request.GET.get('tag')
 
         if categoria:
             noticias = noticias.filter(categoria__slug=categoria)
-
         if tag:
             noticias = noticias.filter(tags__slug=tag)
 
-        # Paginación
-        paginator = Paginator(noticias, 6)  # 6 noticias por página
-        page = request.GET.get('page')
+        # Obtener items_per_page desde el bloque
+        default_items_per_page = 6
+        filtro = next((b for b in self.content if b.block_type == 'news_filter'), None)
+        items_per_page = filtro.value.get('items_per_page') if filtro else default_items_per_page
 
+        # Paginación
+        paginator = Paginator(noticias, items_per_page)
+        page = request.GET.get('page')
         try:
             noticias_paginated = paginator.page(page)
         except PageNotAnInteger:
@@ -1133,15 +1159,15 @@ class NoticiasIndexPage(BaseContentPage):
         except EmptyPage:
             noticias_paginated = paginator.page(paginator.num_pages)
 
+        # Obtener tags relacionados
         noticia_ids = noticias_paginated.object_list.values_list('id', flat=True)
         tag_ids = NoticiaPageTag.objects.filter(
             content_object_id__in=noticia_ids
         ).values_list('tag_id', flat=True)
-
         tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
 
         context['noticias'] = noticias_paginated
-        context['page_obj'] = noticias_paginated  
+        context['page_obj'] = noticias_paginated
         context['categorias'] = CategoriaNoticia.objects.all()
         context['tags'] = tags_relacionados
         context['current_categoria'] = categoria
@@ -1191,7 +1217,22 @@ class NoticiaPage(BaseContentPage):
 
 class EventosIndexPage(BaseContentPage):
     subpage_types = ['home.EventoPage']
-    parent_page_types = ['home.HomePage']
+
+    content = StreamField(
+        [
+            ('event_filter', EventosFiltradosBlock()),
+        ],
+        blank=True,
+        use_json_field=True
+    )
+
+    content_panels = BaseContentPage.content_panels + [
+        FieldPanel("content"),
+    ]
+
+    api_fields = BaseContentPage.api_fields + [
+        APIField("content"),
+    ]
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -1203,12 +1244,14 @@ class EventosIndexPage(BaseContentPage):
 
         if categoria:
             eventos = eventos.filter(categoria__slug=categoria)
-
         if tag:
             eventos = eventos.filter(tags__slug=tag)
 
-        # Paginación (ajusta el número de eventos por página si quieres)
-        paginator = Paginator(eventos, 6)
+        default_items_per_page = 6
+        filtro = next((b for b in self.content if b.block_type == 'event_filter'), None)
+        items_per_page = filtro.value.get('items_per_page') if filtro else default_items_per_page
+
+        paginator = Paginator(eventos, items_per_page)
         page = request.GET.get('page')
 
         try:
@@ -1221,8 +1264,7 @@ class EventosIndexPage(BaseContentPage):
         evento_ids = eventos_paginated.object_list.values_list('id', flat=True)
         tag_ids = EventoPageTag.objects.filter(
             content_object_id__in=evento_ids
-        ).values_list('tag_id', flat=True)
-
+        ).values_list("tag_id", flat=True)
         tags_relacionados = Tag.objects.filter(id__in=tag_ids).distinct()
 
         context['eventos'] = eventos_paginated
@@ -1233,6 +1275,7 @@ class EventosIndexPage(BaseContentPage):
         context['current_tag'] = tag
 
         return context
+
 
 class EventoPage(BaseContentPage):
     fecha = models.DateTimeField("Fecha del Evento")
