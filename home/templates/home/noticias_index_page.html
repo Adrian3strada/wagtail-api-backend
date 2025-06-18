@@ -3,70 +3,89 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Noticias</h1>
+    <h1 class="mb-4" style="color: #001E62; font-weight: 700;">Noticias</h1>
 
     <!-- FILTROS -->
     <div class="mb-4 d-flex flex-wrap gap-2">
-        <a href="{% pageurl page %}" class="btn {% if not current_categoria and not current_tag %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        <a href="{% pageurl page %}"
+            class="btn fw-semibold {% if not current_categoria and not current_tag %}text-white{% else %}border-2{% endif %}"
+            style="background-color: {% if not current_categoria and not current_tag %}#001E62{% else %}transparent; border-color: #001E62; color: #001E62;{% endif %}">
             Todas
         </a>
 
         {% for categoria in categorias %}
-            <a href="?categoria={{ categoria.slug }}" class="btn {% if categoria.slug == current_categoria %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                {{ categoria.nombre }}
-            </a>
+        <a href="?categoria={{ categoria.slug }}"
+            class="btn fw-semibold {% if categoria.slug == current_categoria %}text-white{% else %}border-2{% endif %}"
+            style="background-color: {% if categoria.slug == current_categoria %}#001E62{% else %}transparent; border-color: #001E62; color: #001E62;{% endif %}">
+            {{ categoria.nombre }}
+        </a>
         {% endfor %}
 
         {% for tag in tags %}
-            <a href="?tag={{ tag.slug }}" class="btn {% if tag.slug == current_tag %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                #{{ tag.name }}
-            </a>
+        <a href="?tag={{ tag.slug }}"
+            class="btn fw-semibold {% if tag.slug == current_tag %}text-white{% else %}border-2{% endif %}"
+            style="background-color: {% if tag.slug == current_tag %}#001E62{% else %}transparent; border-color: #001E62; color: #001E62;{% endif %}">
+            #{{ tag.name }}
+        </a>
         {% endfor %}
     </div>
 
     <!-- LISTADO DE NOTICIAS -->
     <div class="row">
-        {% for noticia in noticias %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ noticia.title }}</h5>
-                        <p class="card-text">{{ noticia.search_description|default:"Sin descripción" }}</p>
-                        <p class="text-muted small">{{ noticia.fecha }}</p>
-                        <a href="{{ noticia.url }}" class="btn btn-sm btn-outline-secondary">Leer más</a>
-                    </div>
+        {% for noticia in page_obj.object_list %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold" style="color: #001E62;">{{ noticia.title }}</h5>
+                    <p class="card-text flex-grow-1">{{ noticia.search_description|default:"Sin descripción" }}</p>
+                    <p class="text-muted small mb-3">{{ noticia.fecha }}</p>
+                    <a href="{{ noticia.url }}" class="btn fw-semibold text-white mt-auto"
+                        style="background-color: #001E62;">
+                        Leer más
+                    </a>
                 </div>
             </div>
+        </div>
         {% empty %}
-            <div class="col-12">
-                <p>No se encontraron noticias para los filtros seleccionados.</p>
-            </div>
+        <div class="col-12">
+            <p>No se encontraron noticias para los filtros seleccionados.</p>
+        </div>
         {% endfor %}
     </div>
 
     <!-- PAGINACIÓN -->
     {% if page_obj.paginator.num_pages > 1 %}
-        <nav aria-label="Paginación" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">Anterior</a>
-                    </li>
-                {% endif %}
+    <nav aria-label="Paginación" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link fw-semibold" style="color: #001E62; border-color: #001E62;"
+                    href="?page={{ page_obj.previous_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">
+                    ← Anterior
+                </a>
+            </li>
+            {% endif %}
 
-                {% for i in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-                        <a class="page-link" href="?page={{ i }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">{{ i }}</a>
-                    </li>
-                {% endfor %}
+            {% for i in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                <a class="page-link fw-semibold {% if page_obj.number == i %}text-white{% else %}text-primary{% endif %}"
+                    style="{% if page_obj.number == i %}background-color: #001E62; border-color: #001E62;{% else %}color: #001E62; border-color: #001E62;{% endif %}"
+                    href="?page={{ i }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">
+                    {{ i }}
+                </a>
+            </li>
+            {% endfor %}
 
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">Siguiente</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link fw-semibold" style="color: #001E62; border-color: #001E62;"
+                    href="?page={{ page_obj.next_page_number }}{% if current_categoria %}&categoria={{ current_categoria }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}">
+                    Siguiente →
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
     {% endif %}
 </div>
 {% endblock %}

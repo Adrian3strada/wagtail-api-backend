@@ -11,13 +11,20 @@
     {% if self.posicion_imagen == "fondo" or self.posicion_imagen == "herobanner" %}
     {% with imagen=self.imagenes.0 %}
     {% if imagen %}
-    <div class="bloque-fondo d-flex align-items-center justify-content-center">
-        <div class="bloque-overlay">
+    {% image imagen original as bg_img %}
+    <div class="bloque-fondo d-flex align-items-center justify-content-center position-relative"
+        style="min-height: 50vh;">
+        <!-- Fondo imagen -->
+        <div class="bloque-fondo-img position-absolute top-0 start-0 w-100 h-100"
+            style="background-image: url('{{ bg_img.url }}'); background-size: cover; background-position: center;">
+        </div>
+
+        <!-- Overlay texto -->
+        <div class="bloque-overlay position-relative text-white text-center px-4 py-5">
             <div class="bloque-texto fondo-texto" style="text-align: {{ self.texto.alineacion }};">
                 {{ self.texto.texto|richtext }}
             </div>
         </div>
-        <div class="bloque-fondo-img" style="background-image: url('{{ imagen.url }}');"></div>
     </div>
     {% endif %}
     {% endwith %}
@@ -66,63 +73,10 @@
     {% if self.imagenes %}
     <div class="bloque-galeria d-flex flex-wrap gap-3 justify-content-center">
         {% for img in self.imagenes %}
-        <div class="galeria-item">
-            {% image img fill-400x300 class="img-fluid rounded shadow-sm" %}
-        </div>
+        {% image img fill-400x300 class="img-fluid rounded shadow-sm" %}
         {% endfor %}
     </div>
     {% endif %}
     {% endif %}
+
 </div>
-
-<style>
-    .bloque-titulo {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        color: #0A1A42;
-    }
-
-    .bloque-fondo {
-        position: relative;
-        min-height: 300px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-
-    .bloque-fondo-img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: center;
-        filter: brightness(0.6);
-    }
-
-    .bloque-overlay {
-        position: relative;
-        z-index: 2;
-        padding: 4rem 2rem;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-        text-align: center;
-    }
-
-    .bloque-contenido {
-        margin-bottom: 2rem;
-    }
-
-    .bloque-texto {
-        font-size: 1.1rem;
-        line-height: 1.6;
-        color: #333;
-    }
-
-    .bloque-galeria .galeria-item {
-        flex: 0 0 auto;
-        width: 250px;
-    }
-</style>

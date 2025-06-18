@@ -100,7 +100,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
             })
             return response
 
-        # navbar
+        
         site = Site.find_for_request(request)
         root = site.root_page if site else None
         menu_items = []

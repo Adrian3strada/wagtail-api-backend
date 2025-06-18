@@ -598,7 +598,7 @@ class ImagenConTextoBlock(blocks.StructBlock):
 
     class Meta:
         icon = 'image'
-        label = 'Bloque de Imagen y Texto'
+        label = 'Bloque donde la imagen puede estar en el fondo, a la izquierda, derecha, abajo o en galería, y el texto puede tener alineación'
         template = 'blocks/texto_imagen_block.html'
 
 
