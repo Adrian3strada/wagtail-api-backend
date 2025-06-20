@@ -4,39 +4,46 @@
 <article class="container py-5">
 
 
+    <h1 class="mb-3 text-center display-5 fw-bold">{{ page.title }}</h1>
 
-    <!-- Fecha de publicación -->
-    <p class="text-muted mb-4">
+
+    <p class="text-muted mb-4 text-center fst-italic">
         Publicado el {{ page.fecha }}
     </p>
 
+    <hr class="mb-5" />
+
     <!-- Contenido -->
     {% for block in page.body %}
-    <div class="mb-4">
+    <div class="mb-5">
         {{ block }}
     </div>
+    {% empty %}
+    <p class="text-muted text-center">Contenido no disponible.</p>
     {% endfor %}
-    <!-- Categoría -->
+
+    <hr class="my-5" />
+
+
     {% if page.categoria %}
     <p class="text-muted mb-2">
         <strong>Categoría:</strong> {{ page.categoria.nombre }}
     </p>
     {% endif %}
-    <!-- Etiquetas -->
     {% if page.tags.all %}
     <div class="mt-4">
-        <p class="mb-2"><strong>Etiquetas:</strong></p>
+        <p class="mb-2 fw-semibold"><strong>Etiquetas:</strong></p>
         {% for tag in page.tags.all %}
-        <a href="?tag={{ tag.slug }}" class="btn rounded-pill px-3 py-1 text-white align-items-center"
+        <a href="?tag={{ tag.slug }}" class="btn btn-sm rounded-pill px-3 py-1 me-2 mb-2 text-white"
             style="background-color: #001E62; border-color: #001E62;">{{ tag.name }}</a>
         {% endfor %}
     </div>
     {% endif %}
 
-    <!-- Botón "Ver más noticias" -->
+
     {% if noticias_index_url %}
     <div class="text-center mt-5">
-        <a href="{{ noticias_index_url }}" class="btn rounded-pill px-3 py-1 text-white align-items-center"
+        <a href="{{ noticias_index_url }}" class="btn btn-lg rounded-pill px-4 py-2 text-white fw-semibold"
             style="background-color: #001E62; border-color: #001E62;">
             Ver más noticias{% if page.categoria %} de {{ page.categoria.nombre }}{% endif %}
         </a>

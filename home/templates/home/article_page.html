@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}{{ page.title }}{% endblock %}
-
 {% block content %}
-<h2>{{ page.title }}</h2>
-{% for block in page.body %}
-{{ block }}
-{% empty %}
-<p>Contenido no disponible.</p>
-{% endfor %}
+<article class="container py-5">
+
+    <!-- Contenido -->
+    {% for block in page.body %}
+    <div class="mb-4">
+        {{ block }}
+    </div>
+    {% empty %}
+    <p>Contenido no disponible.</p>
+    {% endfor %}
+
+</article>
 {% endblock %}
+
+  
