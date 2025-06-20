@@ -1,15 +1,21 @@
+annotated-types @ file:///home/conda/feedstock_root/build_artifacts/annotated-types_1733247046149/work
 anyascii==0.3.2
+anyio @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_anyio_1742243108/work
 asgiref==3.8.1
+babel==2.17.0
 beautifulsoup4==4.13.4
-certifi==2025.4.26
+certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1746569525376/work/certifi
 charset-normalizer==3.4.2
+cloudflare @ file:///home/conda/feedstock_root/build_artifacts/cloudflare_1747909206403/work
 defusedxml==0.7.1
+distro @ file:///home/conda/feedstock_root/build_artifacts/distro_1734729835256/work
 Django==5.2.1
 django-ckeditor==6.7.2
 django-cors-headers==4.7.0
 django-filter==25.1
 django-js-asset==3.1.2
 django-modelcluster==6.4
+django-modeltranslation==0.19.14
 django-permissionedforms==0.1
 django-stubs-ext==5.2.0
 django-taggit==6.1.0
@@ -18,14 +24,25 @@ django-treebeard==4.7.1
 djangorestframework==3.16.0
 draftjs_exporter==5.1.0
 et_xmlfile==2.0.0
+exceptiongroup @ file:///home/conda/feedstock_root/build_artifacts/exceptiongroup_1746947292760/work
 filetype==1.2.0
-idna==3.10
+h11 @ file:///home/conda/feedstock_root/build_artifacts/h11_1745526374115/work
+h2 @ file:///home/conda/feedstock_root/build_artifacts/h2_1738578511449/work
+hpack @ file:///home/conda/feedstock_root/build_artifacts/hpack_1737618293087/work
+httpcore @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_httpcore_1745602916/work
+httpx @ file:///home/conda/feedstock_root/build_artifacts/httpx_1733663348460/work
+hyperframe @ file:///home/conda/feedstock_root/build_artifacts/hyperframe_1737618333194/work
+idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1733211830134/work
 laces==0.1.2
 openpyxl==3.1.5
 pillow==11.2.1
 pillow_heif==0.21.0
+polib==1.2.0
+pydantic @ file:///home/conda/feedstock_root/build_artifacts/pydantic_1733316837492/work
+pydantic_core @ file:///C:/b/abs_bdosz7qwys/croot/pydantic-core_1734726071532/work
 requests==2.32.3
 setuptools==78.1.1
+sniffio @ file:///home/conda/feedstock_root/build_artifacts/sniffio_1733244044561/work
 soupsieve==2.7
 sqlparse==0.5.3
 telepath==0.3.1
@@ -33,5 +50,7 @@ typing_extensions==4.13.2
 tzdata==2025.2
 urllib3==2.4.0
 wagtail==7.0
+wagtail-localize==1.12.1
+wagtail-modeltranslation==0.15.2
 wheel==0.45.1
 Willow==1.10.0
