@@ -1,7 +1,7 @@
 from wagtail.api.v2.views import PagesAPIViewSet, BaseAPIViewSet
 from wagtail.models import Site, Page, Locale
 from rest_framework.response import Response
-from home.models import SiteBranding, NoticiaPage, CategoriaNoticia, NoticiaPageTag,EventoPage, CategoriaEvento, EventoPageTag
+from cms.models import SiteBranding, NoticiaPage, CategoriaNoticia, NoticiaPageTag,EventoPage, CategoriaEvento, EventoPageTag
 from taggit.models import Tag
 from django.utils.translation import activate, get_language_from_request
 from django.shortcuts import redirect
@@ -74,7 +74,7 @@ class CustomPagesAPIViewSet(PagesAPIViewSet):
         current_locale = get_current_locale(lang)
         page_type = request.GET.get("type")
 
-        if page_type == "home.NoticiasIndexPage":
+        if page_type == "cms.NoticiasIndexPage":
             categoria_slug = request.GET.get("categoria")
             tag_slug = request.GET.get("tag")
             noticias = NoticiaPage.objects.live().filter(locale=current_locale)

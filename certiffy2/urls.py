@@ -8,7 +8,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 
-from home.api import *
+from cms.api import *
 from wagtail.api.v2.router import WagtailAPIRouter
 
 
@@ -37,9 +37,9 @@ urlpatterns += i18n_patterns(
    
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
-    path("ckeditor/", include("ckeditor_uploader.urls")),
+
     
-    path("", include("home.urls")),
+    path("", include("cms.urls")),
     path("", include(wagtail_urls)),
 )
 

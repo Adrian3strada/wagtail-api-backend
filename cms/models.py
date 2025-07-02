@@ -19,7 +19,7 @@ from wagtail.documents.models import Document
 from wagtail.images.models import Image
 from wagtail.snippets.models import register_snippet
 from wagtail_localize.models import TranslatableMixin
-from ckeditor.widgets import CKEditorWidget
+
 from modelcluster.fields import ParentalKey
 from modelcluster.tags import ClusterTaggableManager
 from taggit.models import TaggedItemBase
@@ -109,7 +109,7 @@ class NoticiaPageTag(TaggedItemBase):
 
 class EventoPageTag(TaggedItemBase):
     content_object = ParentalKey(
-        'home.EventoPage',  
+        'cms.EventoPage',  
         related_name='tagged_items',
         on_delete=models.CASCADE,
     )
@@ -734,14 +734,7 @@ class ListaDeLogosBlock(blocks.StructBlock):
         label = "Lista de Logos"
         template = "blocks/ListaDeLogosBlock.html"
 
-class CKEditorBlock(blocks.FieldBlock):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.field = forms.CharField(widget=CKEditorWidget(config_name='default'))
 
-    class Meta:
-        icon = "doc-full"
-        label = "Texto Avanzado"
 
 
 
@@ -751,7 +744,7 @@ class TarjetaSimpleFondoBlock(blocks.StructBlock):
     imagen = ImageChooserBlock(label="Imagen")
     descripcion = blocks.RichTextBlock(label="Descripción")
     url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
-    categoria = SnippetChooserBlock(required=False, target_model="home.CategoriaNoticia", label="Categoría")
+    categoria = SnippetChooserBlock(required=False, target_model="cms.CategoriaNoticia", label="Categoría")
 
     class Meta:
         icon = "image"
@@ -789,7 +782,7 @@ class GrupoDeTarjetasFondoBlock(blocks.StructBlock):
 
 class CardEventoBlock(blocks.StructBlock):
     fecha = blocks.DateBlock(required=True, label="Fecha del evento")
-    categoria = SnippetChooserBlock(target_model='home.CategoriaEvento', label="Categoría")
+    categoria = SnippetChooserBlock(target_model='cms.CategoriaEvento', label="Categoría")
     titulo = blocks.CharBlock(required=True, label="Título del evento")
     descripcion = blocks.TextBlock(required=False, label="Descripción")
     imagen = ImageChooserBlock(required=True, label="Imagen del evento")
@@ -837,10 +830,10 @@ class TarjetaNoticiaBlock(blocks.StructBlock):
     titulo = blocks.CharBlock(required=False, label="Título (si aplica)")
     imagen = ImageChooserBlock(label="Imagen")
     categoria_noticia = SnippetChooserBlock(
-        target_model="home.CategoriaNoticia", required=False, label="Categoría (Noticia)"
+        target_model="cms.CategoriaNoticia", required=False, label="Categoría (Noticia)"
     )
     categoria_evento = SnippetChooserBlock(
-        target_model="home.CategoriaEvento", required=False, label="Categoría (Evento)"
+        target_model="cms.CategoriaEvento", required=False, label="Categoría (Evento)"
     )
     descripcion = blocks.RichTextBlock(label="Descripción")
     url = blocks.URLBlock(required=False, label="URL (al hacer clic en la tarjeta)")
@@ -1009,7 +1002,7 @@ common_streamfield = [
     ('Document', DocumentBlock()),
     ('Socios', ListaDeLogosBlock()),
     ('ImagenTexto', ImagenConTextoBlock()),
-    ('parrafo_con_estilo', CKEditorBlock()),
+  
     ('ducumentocontexto', DocumentoItemBlock()),
     ('texto_y_documentos', TextoYDocumentosBlock()),
     ('texto_y_documentos_block', TextoYDocumentosBlock()),
@@ -1046,11 +1039,11 @@ class BaseContentPage(Page):
 
 class HomePage(BaseContentPage):
     subpage_types = [
-        'home.NoticiasIndexPage',
-        'home.EventosIndexPage',
-        'home.ContactoPage',
-        'home.PaginaInformativaPage',
-        'home.ArticlePage',
+        'cms.NoticiasIndexPage',
+        'cms.EventosIndexPage',
+        'cms.ContactoPage',
+        'cms.PaginaInformativaPage',
+        'cms.ArticlePage',
     ]
 
     def get_context(self, request):
@@ -1113,7 +1106,7 @@ class HomePage(BaseContentPage):
 
 
 class NoticiasIndexPage(BaseContentPage):
-    subpage_types = ['home.NoticiaPage']
+    subpage_types = ['cms.NoticiaPage']
 
     content = StreamField(
         [
@@ -1180,7 +1173,7 @@ class NoticiasIndexPage(BaseContentPage):
 class NoticiaPage(BaseContentPage):
     fecha = models.DateField("Fecha de Publicación", auto_now_add=True, editable=False) 
     categoria = models.ForeignKey(
-        'home.CategoriaNoticia',
+        'cms.CategoriaNoticia',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -1209,7 +1202,7 @@ class NoticiaPage(BaseContentPage):
     ]
 
     subpage_types = []
-    parent_page_types = ['home.NoticiasIndexPage']
+    parent_page_types = ['cms.NoticiasIndexPage']
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -1224,10 +1217,8 @@ class NoticiaPage(BaseContentPage):
         context["noticias_index_url"] = noticias_index_url
         return context
 
-
-
 class EventosIndexPage(BaseContentPage):
-    subpage_types = ['home.EventoPage']
+    subpage_types = ['cms.EventoPage']
 
     content = StreamField(
         [
@@ -1294,14 +1285,14 @@ class EventoPage(BaseContentPage):
     mapa_url = models.TextField("URL del Mapa", blank=True, help_text="Enlace a Google Maps u otro servicio de mapas")
 
     categoria = models.ForeignKey(
-        'home.CategoriaEvento',
+        'cms.CategoriaEvento',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='eventos'
     )
 
-    tags = ClusterTaggableManager(through='home.EventoPageTag', blank=True)
+    tags = ClusterTaggableManager(through='cms.EventoPageTag', blank=True)
 
     imagen = models.ForeignKey(
         'wagtailimages.Image',
@@ -1330,7 +1321,7 @@ class EventoPage(BaseContentPage):
     ]
 
     subpage_types = []
-    parent_page_types = ['home.EventosIndexPage']
+    parent_page_types = ['cms.EventosIndexPage']
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -1345,11 +1336,11 @@ class EventoPage(BaseContentPage):
         return context
 
 class PaginaInformativaPage(BaseContentPage):  
-    parent_page_types = ['home.HomePage']
-    subpage_types = ['home.ArticlePage']
+    parent_page_types = ['cms.HomePage']
+    subpage_types = ['cms.ArticlePage']
 
 class ArticlePage(BaseContentPage):
-    parent_page_types = ['home.PaginaInformativaPage']
+    parent_page_types = ['cms.PaginaInformativaPage']
     subpage_types = []
 
 
@@ -1372,8 +1363,8 @@ class ContactoPage(BaseContentPage):
         APIField("direccion"),
         APIField("horario"),
     ]
-    parent_page_types = ['home.HomePage']
+    parent_page_types = ['cms.HomePage']
     subpage_types = []
 
-    
+
 

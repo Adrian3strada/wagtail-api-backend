@@ -1,7 +1,7 @@
 from wagtail.models import Page
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from home.models import SiteBranding
+from cms.models import SiteBranding
 from django.utils.translation import get_language
 from wagtail.models import Page, Locale
 from django.urls import reverse
