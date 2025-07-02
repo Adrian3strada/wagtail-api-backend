@@ -22,7 +22,7 @@ api_router.register_endpoint('locales', LocalesAPIViewSet)
 api_router.register_endpoint('navbar', NavbarAPIViewSet)
 api_router.register_endpoint('noticias', NoticiasAPIViewSet)
 api_router.register_endpoint('eventos', EventosAPIViewSet)
-
+    
 
 
 urlpatterns = [

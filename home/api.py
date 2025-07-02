@@ -196,7 +196,7 @@ class NoticiasAPIViewSet(PagesAPIViewSet):
         categoria_slug = request.GET.get("categoria")
         tag_slug = request.GET.get("tag")
 
-        noticias = NoticiaPage.objects.live().filter(locale=current_locale)
+        noticias = NoticiaPage.objects.live().filter(locale=current_locale).order_by('-first_published_at')
 
         if categoria_slug and tag_slug:
             noticias = noticias.filter(
@@ -208,8 +208,10 @@ class NoticiasAPIViewSet(PagesAPIViewSet):
         elif tag_slug:
             noticias = noticias.filter(tags__slug=tag_slug)
 
+        # items per page: permitir pasar como ?page_size=10
+        page_size = int(request.GET.get("page_size", 6))
         page_number = request.GET.get("page", 1)
-        paginator = Paginator(noticias, 6)
+        paginator = Paginator(noticias, page_size)
 
         try:
             page_obj = paginator.page(page_number)
@@ -219,10 +221,16 @@ class NoticiasAPIViewSet(PagesAPIViewSet):
         noticias_data = [{
             'id': n.id,
             'title': n.title,
+            'slug': n.slug,
             'url': n.url,
             'categoria': n.categoria.nombre if n.categoria else None,
             'tags': [tag.name for tag in n.tags.all()],
             'date': n.first_published_at,
+            'imagen': {
+                'url': n.imagen.file.url if n.imagen else None,
+                'title': n.imagen.title if n.imagen else ''
+            }
+            
         } for n in page_obj]
 
         categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaNoticia.objects.all()]
@@ -232,7 +240,10 @@ class NoticiasAPIViewSet(PagesAPIViewSet):
         tags_data = [{"slug": t.slug, "name": t.name} for t in Tag.objects.filter(id__in=tag_ids).distinct()]
 
         return Response({
-            "noticias": noticias_data,
+            "results": noticias_data,  
+            "count": paginator.count,
+            "next": page_obj.next_page_number() if page_obj.has_next() else None,
+            "previous": page_obj.previous_page_number() if page_obj.has_previous() else None,
             "categorias": categorias_data,
             "tags": tags_data,
             "current_categoria": categoria_slug,
@@ -243,8 +254,10 @@ class NoticiasAPIViewSet(PagesAPIViewSet):
                 "has_next": page_obj.has_next(),
                 "has_previous": page_obj.has_previous(),
                 "total_items": paginator.count,
+                "page_size": page_size
             }
         })
+
 
 
 class EventosAPIViewSet(PagesAPIViewSet):
@@ -271,7 +284,7 @@ class EventosAPIViewSet(PagesAPIViewSet):
             eventos = eventos.filter(tags__slug=tag_slug)
 
         page_number = request.GET.get("page", 1)
-        paginator = Paginator(eventos, 6)
+        paginator = Paginator(eventos, 12)
 
         try:
             page_obj = paginator.page(page_number)
@@ -285,6 +298,10 @@ class EventosAPIViewSet(PagesAPIViewSet):
             'categoria': e.categoria.nombre if e.categoria else None,
             'tags': [tag.name for tag in e.tags.all()],
             'date': e.first_published_at,
+            'imagen': {
+                'url': e.imagen.file.url if e.imagen else None,
+                'title': e.imagen.title if e.imagen else ''
+            }
         } for e in page_obj]
 
         categorias_data = [{"slug": c.slug, "nombre": c.nombre} for c in CategoriaEvento.objects.all()]

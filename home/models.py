@@ -29,6 +29,7 @@ from wagtail.blocks import StructBlockValidationError
 
 
 
+
 @register_snippet
 class NavItem(models.Model):
     title = models.CharField(max_length=255)
@@ -1186,16 +1187,25 @@ class NoticiaPage(BaseContentPage):
         related_name='noticias'
     )
     tags = ClusterTaggableManager(through=NoticiaPageTag, blank=True)
+    imagen = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
 
     content_panels = BaseContentPage.content_panels + [
         FieldPanel('categoria'),
         FieldPanel('tags'),
+        FieldPanel('imagen'),
     ]
 
     api_fields = BaseContentPage.api_fields + [
         APIField("fecha"),
         APIField("categoria"),
         APIField("tags"),
+        APIField("imagen"),
     ]
 
     subpage_types = []
@@ -1293,12 +1303,21 @@ class EventoPage(BaseContentPage):
 
     tags = ClusterTaggableManager(through='home.EventoPageTag', blank=True)
 
+    imagen = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
+
     content_panels = BaseContentPage.content_panels + [
         FieldPanel("fecha"),
         FieldPanel("ubicacion"),
         FieldPanel("mapa_url"),
         FieldPanel("categoria"),
         FieldPanel("tags"),
+        FieldPanel("imagen"),  
     ]
 
     api_fields = BaseContentPage.api_fields + [
@@ -1307,6 +1326,7 @@ class EventoPage(BaseContentPage):
         APIField("mapa_url"),
         APIField("categoria"),
         APIField("tags"),
+        APIField("imagen"),  
     ]
 
     subpage_types = []
