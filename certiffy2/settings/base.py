@@ -15,10 +15,20 @@ import os
 from corsheaders.defaults import default_headers
 from django.utils.translation import gettext_lazy as _
 from pathlib import Path
+import ast
+import dj_database_url
+from dotenv import load_dotenv
+import logging
+import datetime
+from django.utils.safestring import mark_safe
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
+logger = logging.getLogger(__name__)
+
+dotenv_path = os.path.join(str(BASE_DIR), '.env')
+load_dotenv(dotenv_path)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -55,9 +65,17 @@ INSTALLED_APPS = [
     "wagtail.api.v2",
     "rest_framework",
     'wagtail.contrib.settings',
-    "modeltranslation",
-   
-
+    "jazzmin",
+    "rest_framework_gis",
+    "django.contrib.gis",
+    "storages",
+    "organizations",
+    "django_extensions",
+    "cities_light",
+    "django_ckeditor_5",
+    "adminsortable2",
+    "polymorphic",
+    "rangefilter",
 ]
 
 MIDDLEWARE = [
@@ -99,12 +117,18 @@ WSGI_APPLICATION = "certiffy2.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(default=DATABASE_URL)
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
+    }
 
 
 # Password validation
@@ -232,5 +256,13 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'cache-control',
     'pragma',
 ]
+
+AUTH_USER_MODEL = "auth.User"
+
+TIME_ZONE = os.getenv("TIME_ZONE", "UTC")
+USE_THOUSAND_SEPARATOR=True
+THOUSAND_SEPARATOR=','
+DECIMAL_SEPARATOR='.'
+NUMBER_GROUPING = (3, 2, 0)
 
 
