@@ -165,7 +165,6 @@ WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("es", "Spanish"),
     ("en", "English"),
     ("fr", "French"),
-    
     ("pt", "Portuguese"),
     ("de", "German"),
 ]
@@ -256,6 +255,118 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'cache-control',
     'pragma',
 ]
+
+# --- Jazzmin Admin Theme Settings ---
+JAZZMIN_SETTINGS = {}
+
+JAZZMIN_UI_TWEAKS = {}
+
+customColorPalette = []
+
+# --- CKEditor 5 Config ---
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': ['undo', 'redo', '|', 'heading', '|', 'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'subscript', 'superscript', '|', 'bulletedList', 'numberedList', 'blockQuote', '|', 'fontSize',
+                    'fontFamily', 'fontColor', 'fontBackgroundColor', 'highlight', 'removeFormat', 'sourceEditing',
+                    ],
+    },
+    'extends': {
+        'blockToolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3',
+            '|',
+            'bulletedList', 'numberedList',
+            '|',
+            'blockQuote',
+        ],
+        'toolbar': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
+                    'code', 'subscript', 'superscript', 'highlight', '|', 'codeBlock', 'sourceEditing', 'insertImage',
+                    'bulletedList', 'numberedList', 'todoList', '|', 'blockQuote', 'imageUpload', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
+                    'insertTable', ],
+        'image': {
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
+                        'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side', '|'],
+            'styles': [
+                'full',
+                'side',
+                'alignLeft',
+                'alignRight',
+                'alignCenter',
+            ]
+        },
+        'table': {
+            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells',
+                               'tableProperties', 'tableCellProperties'],
+            'tableProperties': {
+                'borderColors': customColorPalette,
+                'backgroundColors': customColorPalette
+            },
+            'tableCellProperties': {
+                'borderColors': customColorPalette,
+                'backgroundColors': customColorPalette
+            }
+        },
+        'heading': {
+            'options': [
+                {'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph'},
+                {'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1'},
+                {'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2'},
+                {'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3'}
+            ]
+        }
+    },
+    'list': {
+        'properties': {
+            'styles': 'true',
+            'startIndex': 'true',
+            'reversed': 'true',
+        }
+    }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '200/minute',
+        'user': '200/minute',
+        'loginAttempts': '3/hr',
+    },
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'common.firebase_auth.authentication.FirebaseAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20,
+}
+
+
+CITIES_LIGHT_TRANSLATION_LANGUAGES = ['es', 'en', 'fr', 'de', 'pt']
+CITIES_LIGHT_INCLUDE_CITY_TYPES = [
+    'PPL', 'PPLA', 'PPLA2', 'PPLA3', 'PPLA4', 'PPLC',
+]
+CITIES_LIGHT_CITY_SOURCES = ['https://download.geonames.org/export/dump/cities1000.zip']
+
+
+FIREBASE_AUTH_PROJECTS = ast.literal_eval(os.getenv("FIREBASE_AUTH_PROJECTS", "[]"))
+EE_SERVICE_ACCOUNT_EMAIL = os.getenv("EE_SERVICE_ACCOUNT_EMAIL", "")
+EE_SERVICE_ACCOUNT_DATA = os.getenv("EE_SERVICE_ACCOUNT_DATA", "")
+
+TAGGIT_CASE_INSENSITIVE = True
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+ORGS_SLUGFIELD = 'django_extensions.db.fields.AutoSlugField'
+EUDR_DATA_FEATURES_SRID = 4326
+EUDR_START_DATE_BASE = datetime.datetime(2020, 6, 10)
+CLOUDY_PIXEL_PERCENTAGE = 5
+
 
 AUTH_USER_MODEL = "auth.User"
 
